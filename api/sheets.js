@@ -1,6 +1,6 @@
 const { google } = require('googleapis');
 
-const SHEET_ID = '1yZEPPqEPyTtscxyDvMpO7UI1BRVUNi_6';
+const SHEET_ID = '17mW4c5Iv5BnmFDW1RE-ckaqjQ6IHLC5Hapb6kgCmBE8';Ni_6';
 const SHEET_NAME = '재고';
 const DRIVE_FOLDER_ID = '14S8D_Iq5LtvDV6RjzKN2RsjV9rzv8jVB';
 
