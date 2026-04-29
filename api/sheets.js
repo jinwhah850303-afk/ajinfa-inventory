@@ -127,6 +127,7 @@ async function uploadImage(base64Data, filename, mimeType) {
       name: filename,
       parents: [DRIVE_FOLDER_ID],
     },
+    supportsAllDrives: true,
     media: {
       mimeType: mimeType || 'image/jpeg',
       body: stream,
