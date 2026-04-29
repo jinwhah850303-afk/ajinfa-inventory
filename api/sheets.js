@@ -141,7 +141,7 @@ async function uploadImage(base64Data, filename, mimeType) {
       type: 'anyone',
     },
   });
-  const imageUrl = `https://drive.google.com/thumbnail?id=${res.data.id}&sz=w800`;
+  const imageUrl = `https://lh3.googleusercontent.com/d/${res.data.id}`;
   return imageUrl;
 }
 
