@@ -3,6 +3,15 @@ const { google } = require('googleapis');
 const SHEET_ID = '17mW4c5Iv5BnmFDW1RE-ckaqjQ6IHLC5Hapb6kgCmBE8';
 const SHEET_NAME = '재고';
 
+// Vercel 본문 크기 제한 늘리기 (이미지 업로드용)
+module.exports.config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 function getAuth() {
   const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
   return new google.auth.GoogleAuth({
@@ -107,40 +116,56 @@ async function getAllProducts() {
   })).filter(p => p.id);
 }
 
+// Cloudinary 이미지 업로드
 async function uploadImage(base64Data, filename, mimeType) {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error('Cloudinary 환경변수가 설정되지 않았습니다');
+  }
+
   const timestamp = Math.round(Date.now() / 1000);
   const crypto = require('crypto');
   
+  // Cloudinary는 SHA-1 사용
   const signature = crypto
-    .createHash('sha256')
+    .createHash('sha1')
     .update(`timestamp=${timestamp}${apiSecret}`)
     .digest('hex');
 
-  const formData = `data:${mimeType};base64,${base64Data}`;
+  const dataUri = `data:${mimeType || 'image/jpeg'};base64,${base64Data}`;
+
+  // form-urlencoded 방식으로 전송
+  const params = new URLSearchParams();
+  params.append('file', dataUri);
+  params.append('timestamp', timestamp.toString());
+  params.append('api_key', apiKey);
+  params.append('signature', signature);
 
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        file: formData,
-        timestamp,
-        signature,
-        api_key: apiKey,
-      }),
+      body: params,
     }
   );
 
   const result = await response.json();
+  
+  if (result.error) {
+    throw new Error(`Cloudinary 오류: ${result.error.message}`);
+  }
+  
+  if (!result.secure_url) {
+    throw new Error('이미지 URL을 받을 수 없습니다');
+  }
+
   return result.secure_url;
 }
 
-module.exports = async (req, res) => {
+const handler = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -188,4 +213,13 @@ module.exports = async (req, res) => {
     console.error(err);
     return res.status(500).json({ error: err.message });
   }
+};
+
+module.exports = handler;
+module.exports.config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
 };
