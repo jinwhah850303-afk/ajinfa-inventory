@@ -2,7 +2,6 @@ const { google } = require('googleapis');
 
 const SHEET_ID = '17mW4c5Iv5BnmFDW1RE-ckaqjQ6IHLC5Hapb6kgCmBE8';
 const SHEET_NAME = '재고';
-const DRIVE_FOLDER_ID = '14S8D_Iq5LtvDV6RjzKN2RsjV9rzv8jVB';
 
 function getAuth() {
   const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
@@ -10,7 +9,6 @@ function getAuth() {
     credentials,
     scopes: [
       'https://www.googleapis.com/auth/spreadsheets',
-      'https://www.googleapis.com/auth/drive',
     ],
   });
 }
@@ -115,35 +113,11 @@ async function getAllProducts() {
   })).filter(p => p.id);
 }
 
-// 이미지 업로드 to 구글 드라이브
+// 이미지 → Base64 Data URL로 저장 (드라이브 불필요)
 async function uploadImage(base64Data, filename, mimeType) {
-  const auth = getAuth();
-  const drive = google.drive({ version: 'v3', auth });
-  const buffer = Buffer.from(base64Data, 'base64');
-  const { Readable } = require('stream');
-  const stream = Readable.from(buffer);
-  const res = await drive.files.create({
-    requestBody: {
-      name: filename,
-      parents: [DRIVE_FOLDER_ID],
-    },
-    supportsAllDrives: true,
-    media: {
-      mimeType: mimeType || 'image/jpeg',
-      body: stream,
-    },
-    fields: 'id,webViewLink,webContentLink',
-  });
-  // 공개 접근 권한 부여
-  await drive.permissions.create({
-    fileId: res.data.id,
-    requestBody: {
-      role: 'reader',
-      type: 'anyone',
-    },
-  });
-  const imageUrl = `https://lh3.googleusercontent.com/d/${res.data.id}`;
-  return imageUrl;
+  const type = mimeType || 'image/jpeg';
+  const dataUrl = `data:${type};base64,${base64Data}`;
+  return dataUrl;
 }
 
 module.exports = async (req, res) => {
@@ -158,7 +132,6 @@ module.exports = async (req, res) => {
   try {
     const { action } = req.query;
 
-    // 제품 조회
     if (req.method === 'GET' && action === 'get') {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'id 필요' });
@@ -166,27 +139,23 @@ module.exports = async (req, res) => {
       return res.status(200).json({ product });
     }
 
-    // 전체 목록 조회
     if (req.method === 'GET' && action === 'list') {
       const products = await getAllProducts();
       return res.status(200).json({ products });
     }
 
-    // 제품 등록
     if (req.method === 'POST' && action === 'add') {
       const data = req.body;
       await addProduct(data);
       return res.status(200).json({ success: true });
     }
 
-    // 제품 수정 (수량 등)
     if (req.method === 'POST' && action === 'update') {
       const data = req.body;
       const status = await updateProduct(data.rowIndex, data);
       return res.status(200).json({ success: true, status });
     }
 
-    // 이미지 업로드
     if (req.method === 'POST' && action === 'upload') {
       const { base64, filename, mimeType } = req.body;
       const imageUrl = await uploadImage(base64, filename, mimeType);
