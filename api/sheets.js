@@ -3,15 +3,6 @@ const { google } = require('googleapis');
 const SHEET_ID = '17mW4c5Iv5BnmFDW1RE-ckaqjQ6IHLC5Hapb6kgCmBE8';
 const SHEET_NAME = '재고';
 
-// Vercel 본문 크기 제한 늘리기 (이미지 업로드용)
-module.exports.config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
-
 function getAuth() {
   const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
   return new google.auth.GoogleAuth({
@@ -116,20 +107,26 @@ async function getAllProducts() {
   })).filter(p => p.id);
 }
 
-// Cloudinary 이미지 업로드
+// Cloudinary 이미지 업로드 (디버그 강화 버전)
 async function uploadImage(base64Data, filename, mimeType) {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
+  // 어떤 환경변수가 비어있는지 정확히 표시
+  const debug = {
+    CLOUDINARY_CLOUD_NAME: cloudName ? `있음(길이:${cloudName.length})` : '없음',
+    CLOUDINARY_API_KEY: apiKey ? `있음(길이:${apiKey.length})` : '없음',
+    CLOUDINARY_API_SECRET: apiSecret ? `있음(길이:${apiSecret.length})` : '없음',
+  };
+
   if (!cloudName || !apiKey || !apiSecret) {
-    throw new Error('Cloudinary 환경변수가 설정되지 않았습니다');
+    throw new Error(`Cloudinary 환경변수 상태: ${JSON.stringify(debug)}`);
   }
 
   const timestamp = Math.round(Date.now() / 1000);
   const crypto = require('crypto');
   
-  // Cloudinary는 SHA-1 사용
   const signature = crypto
     .createHash('sha1')
     .update(`timestamp=${timestamp}${apiSecret}`)
@@ -137,7 +134,6 @@ async function uploadImage(base64Data, filename, mimeType) {
 
   const dataUri = `data:${mimeType || 'image/jpeg'};base64,${base64Data}`;
 
-  // form-urlencoded 방식으로 전송
   const params = new URLSearchParams();
   params.append('file', dataUri);
   params.append('timestamp', timestamp.toString());
@@ -205,6 +201,16 @@ const handler = async (req, res) => {
       const { base64, filename, mimeType } = req.body;
       const imageUrl = await uploadImage(base64, filename, mimeType);
       return res.status(200).json({ success: true, imageUrl });
+    }
+
+    // 디버그 엔드포인트 추가
+    if (req.method === 'GET' && action === 'debug') {
+      return res.status(200).json({
+        CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? `있음(길이:${process.env.CLOUDINARY_CLOUD_NAME.length})` : '없음',
+        CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY ? `있음(길이:${process.env.CLOUDINARY_API_KEY.length})` : '없음',
+        CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET ? `있음(길이:${process.env.CLOUDINARY_API_SECRET.length})` : '없음',
+        GOOGLE_CREDENTIALS: process.env.GOOGLE_CREDENTIALS ? '있음' : '없음',
+      });
     }
 
     return res.status(400).json({ error: '알 수 없는 요청' });
