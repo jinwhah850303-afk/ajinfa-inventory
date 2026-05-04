@@ -1210,9 +1210,16 @@ document.getElementById('passwordInput').addEventListener('keydown', e => {
 // ── 초기화 ──
 function initApp() {
   const path = window.location.pathname;
-  const match = path.match(/\/i\/([A-Z0-9-]+)/i);
+  const match = path.match(/\/i\/([^\/]+)/i);
   if (match) {
-    const productId = match[1].toUpperCase();
+    let rawId = match[1];
+    let productId;
+    // 숫자만 있으면 INV-000001 형식으로 변환
+    if (/^\d+$/.test(rawId)) {
+      productId = 'INV-' + String(parseInt(rawId)).padStart(6, '0');
+    } else {
+      productId = rawId.toUpperCase();
+    }
     showPage('pageProduct');
     loadProduct(productId);
   } else {
