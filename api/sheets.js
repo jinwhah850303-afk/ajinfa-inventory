@@ -16,7 +16,7 @@ async function getProduct(id) {
   const sheets = google.sheets({ version: 'v4', auth });
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A:H`,
+    range: `${SHEET_NAME}!A:I`,
   });
   const rows = res.data.values || [];
   for (let i = 1; i < rows.length; i++) {
@@ -30,6 +30,7 @@ async function getProduct(id) {
         imageUrl: rows[i][5] || '',
         createdAt: rows[i][6] || '',
         updatedAt: rows[i][7] || '',
+        note: rows[i][8] || '',
         rowIndex: i + 1,
       };
     }
@@ -43,7 +44,7 @@ async function addProduct(data) {
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
   await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A:H`,
+    range: `${SHEET_NAME}!A:I`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [[
@@ -55,6 +56,7 @@ async function addProduct(data) {
         data.imageUrl || '',
         now,
         now,
+        data.note || '',
       ]],
     },
   });
@@ -67,7 +69,7 @@ async function updateProduct(rowIndex, data) {
   const status = data.quantity > 0 ? '정상' : '품절';
   await sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A${rowIndex}:H${rowIndex}`,
+    range: `${SHEET_NAME}!A${rowIndex}:I${rowIndex}`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [[
@@ -79,6 +81,7 @@ async function updateProduct(rowIndex, data) {
         data.imageUrl || '',
         data.createdAt,
         now,
+        data.note || '',
       ]],
     },
   });
@@ -90,7 +93,7 @@ async function getAllProducts() {
   const sheets = google.sheets({ version: 'v4', auth });
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A:H`,
+    range: `${SHEET_NAME}!A:I`,
   });
   const rows = res.data.values || [];
   if (rows.length <= 1) return [];
@@ -103,61 +106,38 @@ async function getAllProducts() {
     imageUrl: row[5] || '',
     createdAt: row[6] || '',
     updatedAt: row[7] || '',
+    note: row[8] || '',
     rowIndex: i + 2,
   })).filter(p => p.id);
 }
 
-// Cloudinary 이미지 업로드 (디버그 강화 버전)
 async function uploadImage(base64Data, filename, mimeType) {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  // 어떤 환경변수가 비어있는지 정확히 표시
-  const debug = {
-    CLOUDINARY_CLOUD_NAME: cloudName ? `있음(길이:${cloudName.length})` : '없음',
-    CLOUDINARY_API_KEY: apiKey ? `있음(길이:${apiKey.length})` : '없음',
-    CLOUDINARY_API_SECRET: apiSecret ? `있음(길이:${apiSecret.length})` : '없음',
-  };
-
   if (!cloudName || !apiKey || !apiSecret) {
-    throw new Error(`Cloudinary 환경변수 상태: ${JSON.stringify(debug)}`);
+    throw new Error('Cloudinary 환경변수가 설정되지 않았습니다');
   }
 
   const timestamp = Math.round(Date.now() / 1000);
   const crypto = require('crypto');
-  
-  const signature = crypto
-    .createHash('sha1')
-    .update(`timestamp=${timestamp}${apiSecret}`)
-    .digest('hex');
-
+  const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${apiSecret}`).digest('hex');
   const dataUri = `data:${mimeType || 'image/jpeg'};base64,${base64Data}`;
-
   const params = new URLSearchParams();
   params.append('file', dataUri);
   params.append('timestamp', timestamp.toString());
   params.append('api_key', apiKey);
   params.append('signature', signature);
 
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    {
-      method: 'POST',
-      body: params,
-    }
-  );
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: params,
+  });
 
   const result = await response.json();
-  
-  if (result.error) {
-    throw new Error(`Cloudinary 오류: ${result.error.message}`);
-  }
-  
-  if (!result.secure_url) {
-    throw new Error('이미지 URL을 받을 수 없습니다');
-  }
-
+  if (result.error) throw new Error(`Cloudinary 오류: ${result.error.message}`);
+  if (!result.secure_url) throw new Error('이미지 URL을 받을 수 없습니다');
   return result.secure_url;
 }
 
@@ -165,10 +145,7 @@ const handler = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   try {
     const { action } = req.query;
@@ -186,14 +163,12 @@ const handler = async (req, res) => {
     }
 
     if (req.method === 'POST' && action === 'add') {
-      const data = req.body;
-      await addProduct(data);
+      await addProduct(req.body);
       return res.status(200).json({ success: true });
     }
 
     if (req.method === 'POST' && action === 'update') {
-      const data = req.body;
-      const status = await updateProduct(data.rowIndex, data);
+      const status = await updateProduct(req.body.rowIndex, req.body);
       return res.status(200).json({ success: true, status });
     }
 
@@ -203,7 +178,6 @@ const handler = async (req, res) => {
       return res.status(200).json({ success: true, imageUrl });
     }
 
-    // 디버그 엔드포인트 추가
     if (req.method === 'GET' && action === 'debug') {
       return res.status(200).json({
         CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME ? `있음(길이:${process.env.CLOUDINARY_CLOUD_NAME.length})` : '없음',
@@ -214,7 +188,6 @@ const handler = async (req, res) => {
     }
 
     return res.status(400).json({ error: '알 수 없는 요청' });
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: err.message });
@@ -222,10 +195,4 @@ const handler = async (req, res) => {
 };
 
 module.exports = handler;
-module.exports.config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
+module.exports.config = { api: { bodyParser: { sizeLimit: '10mb' } } };
