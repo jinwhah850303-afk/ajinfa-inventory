@@ -125,6 +125,17 @@
   .image-preview { display: none; position: relative; border-radius: var(--radius-sm); overflow: hidden; }
   .image-preview img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
   .image-preview-remove { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+
+  /* ── 블로그 링크로 가져오기 ── */
+  .blog-fetch-row { display: flex; gap: 8px; }
+  .blog-fetch-row .form-input { flex: 1; }
+  .btn-blog-fetch { flex-shrink: 0; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 0 16px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  .btn-blog-fetch:active { transform: scale(0.96); }
+  .btn-blog-fetch:disabled { opacity: 0.5; cursor: not-allowed; }
+  .blog-fetch-hint { font-size: 11px; color: var(--text-sub); margin-top: 6px; }
+  .or-divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; color: var(--text-sub); font-size: 12px; }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
   .page-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
   .page-subtitle { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
   .search-bar { display: flex; align-items: center; background: var(--card); border-radius: var(--radius-sm); border: 1.5px solid var(--border); padding: 12px 16px; gap: 10px; margin-bottom: 16px; box-shadow: var(--shadow); }
@@ -223,8 +234,19 @@
           <div class="form-group"><label class="form-label">위치 <span class="required">*</span></label><input type="text" class="form-input" id="regLocation" placeholder="예: S4"></div>
           <div class="form-group"><label class="form-label">수량 <span class="required">*</span></label><input type="number" class="form-input" id="regQty" placeholder="0" min="0"></div>
           <div class="form-group"><label class="form-label">비고</label><textarea class="form-input" id="regNote" placeholder="메모, 특이사항 등"></textarea></div>
+
           <div class="form-group">
             <label class="form-label">제품 사진</label>
+
+            <!-- 블로그 링크로 가져오기 -->
+            <div class="blog-fetch-row">
+              <input type="text" class="form-input" id="regBlogUrl" placeholder="네이버 블로그 게시글 링크 붙여넣기">
+              <button type="button" class="btn-blog-fetch" id="regBlogFetchBtn" onclick="fetchBlogImageForReg()">가져오기</button>
+            </div>
+            <div class="blog-fetch-hint">블로그 글의 대표 사진을 자동으로 가져옵니다 (저해상도라도 표시용으로 충분)</div>
+
+            <div class="or-divider">또는 직접 업로드</div>
+
             <div class="image-preview" id="regImagePreview"><img id="regImagePreviewImg" src="" alt=""><button class="image-preview-remove" onclick="removeImage()">✕</button></div>
             <div class="image-upload-area" id="regUploadArea">
               <input type="file" accept="image/*" id="regImageInput" onchange="handleImageSelect(event)">
@@ -233,6 +255,7 @@
               <div class="upload-hint">JPG, PNG 지원</div>
             </div>
           </div>
+
           <button class="btn-save" onclick="registerProduct()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             제품 등록하기
@@ -418,6 +441,16 @@
     <div class="form-group"><label class="form-label">비고</label><textarea class="form-input" id="editNote" placeholder="메모, 특이사항 등"></textarea></div>
     <div class="form-group">
       <label class="form-label">제품 사진 변경</label>
+
+      <!-- 블로그 링크로 가져오기 -->
+      <div class="blog-fetch-row">
+        <input type="text" class="form-input" id="editBlogUrl" placeholder="네이버 블로그 게시글 링크 붙여넣기">
+        <button type="button" class="btn-blog-fetch" id="editBlogFetchBtn" onclick="fetchBlogImageForEdit()">가져오기</button>
+      </div>
+      <div class="blog-fetch-hint">블로그 글의 대표 사진을 자동으로 가져옵니다</div>
+
+      <div class="or-divider">또는 직접 업로드</div>
+
       <div class="image-preview" id="editImagePreview"><img id="editImagePreviewImg" src="" alt=""><button class="image-preview-remove" onclick="removeEditImage()">✕</button></div>
       <div class="image-upload-area" id="editUploadArea">
         <input type="file" accept="image/*" id="editImageInput" onchange="handleEditImageSelect(event)">
@@ -440,6 +473,11 @@ let currentProduct = null, currentQty = 0, displayQty = 0;
 let allProducts = [], currentFilter = 'all';
 let selectedImageBase64 = null, selectedImageMime = null;
 let editImageBase64 = null, editImageMime = null, editImageChanged = false;
+
+// 블로그에서 가져온 이미지는 이미 Cloudinary에 업로드 완료된 URL이라
+// 별도 base64 업로드 없이 그대로 저장에 사용됨
+let regBlogImageUrl = null;
+let editBlogImageUrl = null;
 
 // ══════════════════════════════════════════
 // 박스 → 캐비닛 매핑 (업데이트 쉽게 여기서만 수정!)
@@ -608,6 +646,9 @@ async function loadProduct(id) {
       document.getElementById('registerForm').style.display = 'block';
       document.getElementById('regId').value = id;
       document.getElementById('registerSubtitle').textContent = `${id} — 새 제품을 등록하세요`;
+      // 등록 폼 초기화
+      regBlogImageUrl = null;
+      document.getElementById('regBlogUrl').value = '';
     }
   } catch(e) {
     document.getElementById('productLoading').style.display = 'none';
@@ -664,23 +705,54 @@ async function saveQty() {
   } catch(e) { hideLoading(); showToast('오류가 발생했습니다', 'error'); }
 }
 
+// ── 블로그 링크로 사진 가져오기 (등록 폼) ──
+async function fetchBlogImageForReg() {
+  const blogUrl = document.getElementById('regBlogUrl').value.trim();
+  if (!blogUrl) { showToast('블로그 주소를 입력하세요', 'error'); return; }
+  const btn = document.getElementById('regBlogFetchBtn');
+  btn.disabled = true; btn.textContent = '가져오는 중...';
+  try {
+    const res = await fetch(`${API}?action=fetchBlogImage`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ blogUrl, filename: `blog_${Date.now()}.jpg` })
+    });
+    const data = await res.json();
+    if (data.success && data.imageUrl) {
+      regBlogImageUrl = data.imageUrl;
+      selectedImageBase64 = null; selectedImageMime = null; // 직접 업로드와 충돌 방지
+      document.getElementById('regImagePreviewImg').src = data.imageUrl;
+      document.getElementById('regImagePreview').style.display = 'block';
+      document.getElementById('regUploadArea').style.display = 'none';
+      showToast('블로그 사진을 가져왔습니다 ✓', 'success');
+    } else {
+      showToast(data.error || '가져오기 실패', 'error');
+    }
+  } catch(e) {
+    showToast('오류가 발생했습니다', 'error');
+  }
+  btn.disabled = false; btn.textContent = '가져오기';
+}
+
 async function registerProduct() {
   const id = document.getElementById('regId').value;
   const name = document.getElementById('regName').value.trim();
   const location = document.getElementById('regLocation').value.trim();
   const qty = parseInt(document.getElementById('regQty').value) || 0;
   const note = document.getElementById('regNote').value.trim();
+  const blogUrl = document.getElementById('regBlogUrl').value.trim();
   if (!name) { showToast('제품명을 입력하세요', 'error'); return; }
   if (!location) { showToast('위치를 입력하세요', 'error'); return; }
   showLoading('등록 중...');
   try {
     let imageUrl = '';
-    if (selectedImageBase64) {
+    if (regBlogImageUrl) {
+      imageUrl = regBlogImageUrl;
+    } else if (selectedImageBase64) {
       const up = await fetch(`${API}?action=upload`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({base64:selectedImageBase64, filename:`${id}_${Date.now()}.jpg`, mimeType:selectedImageMime}) });
       const ud = await up.json();
       if (ud.imageUrl) imageUrl = ud.imageUrl;
     }
-    const res = await fetch(`${API}?action=add`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id,name,location,quantity:qty,imageUrl,note}) });
+    const res = await fetch(`${API}?action=add`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id,name,location,quantity:qty,imageUrl,note,blogUrl}) });
     const data = await res.json();
     hideLoading();
     if (data.success) { showToast('등록 완료! ✓', 'success'); await loadProduct(id); }
@@ -690,6 +762,7 @@ async function registerProduct() {
 
 function handleImageSelect(event) {
   const file = event.target.files[0]; if (!file) return;
+  regBlogImageUrl = null; // 직접 업로드하면 블로그 이미지는 무시
   selectedImageMime = file.type;
   const reader = new FileReader();
   reader.onload = e => {
@@ -701,7 +774,7 @@ function handleImageSelect(event) {
   reader.readAsDataURL(file);
 }
 function removeImage() {
-  selectedImageBase64 = null; selectedImageMime = null;
+  selectedImageBase64 = null; selectedImageMime = null; regBlogImageUrl = null;
   document.getElementById('regImagePreview').style.display = 'none';
   document.getElementById('regUploadArea').style.display = 'block';
   document.getElementById('regImageInput').value = '';
@@ -712,15 +785,45 @@ function openEditModal() {
   document.getElementById('editName').value = currentProduct.name;
   document.getElementById('editLocation').value = currentProduct.location;
   document.getElementById('editNote').value = currentProduct.note || '';
-  editImageBase64 = null; editImageMime = null; editImageChanged = false;
+  document.getElementById('editBlogUrl').value = currentProduct.blogUrl || '';
+  editImageBase64 = null; editImageMime = null; editImageChanged = false; editBlogImageUrl = null;
   document.getElementById('editImagePreview').style.display = 'none';
   document.getElementById('editUploadArea').style.display = 'block';
   document.getElementById('editModal').classList.add('show');
 }
 function closeEditModal() { document.getElementById('editModal').classList.remove('show'); }
 
+// ── 블로그 링크로 사진 가져오기 (수정 모달) ──
+async function fetchBlogImageForEdit() {
+  const blogUrl = document.getElementById('editBlogUrl').value.trim();
+  if (!blogUrl) { showToast('블로그 주소를 입력하세요', 'error'); return; }
+  const btn = document.getElementById('editBlogFetchBtn');
+  btn.disabled = true; btn.textContent = '가져오는 중...';
+  try {
+    const res = await fetch(`${API}?action=fetchBlogImage`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ blogUrl, filename: `blog_${Date.now()}.jpg` })
+    });
+    const data = await res.json();
+    if (data.success && data.imageUrl) {
+      editBlogImageUrl = data.imageUrl;
+      editImageBase64 = null; editImageMime = null; editImageChanged = true;
+      document.getElementById('editImagePreviewImg').src = data.imageUrl;
+      document.getElementById('editImagePreview').style.display = 'block';
+      document.getElementById('editUploadArea').style.display = 'none';
+      showToast('블로그 사진을 가져왔습니다 ✓', 'success');
+    } else {
+      showToast(data.error || '가져오기 실패', 'error');
+    }
+  } catch(e) {
+    showToast('오류가 발생했습니다', 'error');
+  }
+  btn.disabled = false; btn.textContent = '가져오기';
+}
+
 function handleEditImageSelect(event) {
   const file = event.target.files[0]; if (!file) return;
+  editBlogImageUrl = null; // 직접 업로드하면 블로그 이미지는 무시
   editImageMime = file.type; editImageChanged = true;
   const reader = new FileReader();
   reader.onload = e => {
@@ -732,7 +835,7 @@ function handleEditImageSelect(event) {
   reader.readAsDataURL(file);
 }
 function removeEditImage() {
-  editImageBase64 = null; editImageMime = null; editImageChanged = true;
+  editImageBase64 = null; editImageMime = null; editImageChanged = true; editBlogImageUrl = null;
   document.getElementById('editImagePreview').style.display = 'none';
   document.getElementById('editUploadArea').style.display = 'block';
   document.getElementById('editImageInput').value = '';
@@ -742,23 +845,26 @@ async function saveEdit() {
   const name = document.getElementById('editName').value.trim();
   const location = document.getElementById('editLocation').value.trim();
   const note = document.getElementById('editNote').value.trim();
+  const blogUrl = document.getElementById('editBlogUrl').value.trim();
   if (!name) { showToast('제품명을 입력하세요', 'error'); return; }
   if (!location) { showToast('위치를 입력하세요', 'error'); return; }
   showLoading('수정 중...'); closeEditModal();
   try {
     let imageUrl = currentProduct.imageUrl;
-    if (editImageChanged) {
+    if (editBlogImageUrl) {
+      imageUrl = editBlogImageUrl;
+    } else if (editImageChanged) {
       if (editImageBase64) {
         const up = await fetch(`${API}?action=upload`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({base64:editImageBase64, filename:`${currentProduct.id}_${Date.now()}.jpg`, mimeType:editImageMime}) });
         const ud = await up.json();
         if (ud.imageUrl) imageUrl = ud.imageUrl;
       } else imageUrl = '';
     }
-    const res = await fetch(`${API}?action=update`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({...currentProduct, name, location, imageUrl, note}) });
+    const res = await fetch(`${API}?action=update`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({...currentProduct, name, location, imageUrl, note, blogUrl}) });
     const data = await res.json();
     hideLoading();
     if (data.success) {
-      currentProduct = {...currentProduct, name, location, imageUrl, note};
+      currentProduct = {...currentProduct, name, location, imageUrl, note, blogUrl};
       renderProductView(currentProduct);
       showToast('수정 완료 ✓', 'success');
     } else showToast('수정 실패', 'error');
