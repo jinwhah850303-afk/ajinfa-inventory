@@ -11,12 +11,17 @@ function getAuth() {
   });
 }
 
+// ══════════════════════════════════════════
+// 시트 컬럼: A:고유번호 B:제품명 C:위치 D:수량 E:상태
+//            F:이미지URL G:등록일 H:최종수정 I:비고 J:블로그링크
+// ══════════════════════════════════════════
+
 async function getProduct(id) {
   const auth = getAuth();
   const sheets = google.sheets({ version: 'v4', auth });
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A:I`,
+    range: `${SHEET_NAME}!A:J`,
   });
   const rows = res.data.values || [];
   for (let i = 1; i < rows.length; i++) {
@@ -31,6 +36,7 @@ async function getProduct(id) {
         createdAt: rows[i][6] || '',
         updatedAt: rows[i][7] || '',
         note: rows[i][8] || '',
+        blogUrl: rows[i][9] || '',
         rowIndex: i + 1,
       };
     }
@@ -44,7 +50,7 @@ async function addProduct(data) {
   const now = new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
   await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A:I`,
+    range: `${SHEET_NAME}!A:J`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [[
@@ -57,6 +63,7 @@ async function addProduct(data) {
         now,
         now,
         data.note || '',
+        data.blogUrl || '',
       ]],
     },
   });
@@ -69,7 +76,7 @@ async function updateProduct(rowIndex, data) {
   const status = data.quantity > 0 ? '정상' : '품절';
   await sheets.spreadsheets.values.update({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A${rowIndex}:I${rowIndex}`,
+    range: `${SHEET_NAME}!A${rowIndex}:J${rowIndex}`,
     valueInputOption: 'RAW',
     requestBody: {
       values: [[
@@ -82,6 +89,7 @@ async function updateProduct(rowIndex, data) {
         data.createdAt,
         now,
         data.note || '',
+        data.blogUrl || '',
       ]],
     },
   });
@@ -93,7 +101,7 @@ async function getAllProducts() {
   const sheets = google.sheets({ version: 'v4', auth });
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${SHEET_NAME}!A:I`,
+    range: `${SHEET_NAME}!A:J`,
   });
   const rows = res.data.values || [];
   if (rows.length <= 1) return [];
@@ -107,6 +115,7 @@ async function getAllProducts() {
     createdAt: row[6] || '',
     updatedAt: row[7] || '',
     note: row[8] || '',
+    blogUrl: row[9] || '',
     rowIndex: i + 2,
   })).filter(p => p.id);
 }
@@ -139,6 +148,104 @@ async function uploadImage(base64Data, filename, mimeType) {
   if (result.error) throw new Error(`Cloudinary 오류: ${result.error.message}`);
   if (!result.secure_url) throw new Error('이미지 URL을 받을 수 없습니다');
   return result.secure_url;
+}
+
+// ══════════════════════════════════════════
+// 네이버 블로그 대표 이미지(og:image) 추출
+// ══════════════════════════════════════════
+
+const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+  'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+  'Referer': 'https://blog.naver.com/',
+};
+
+function extractBlogIdAndLogNo(blogUrl) {
+  // 지원 형식:
+  // https://blog.naver.com/{blogId}/{logNo}
+  // https://m.blog.naver.com/{blogId}/{logNo}
+  // https://blog.naver.com/PostView.naver?blogId={blogId}&logNo={logNo}
+  let match = blogUrl.match(/blog\.naver\.com\/([^\/\?]+)\/(\d+)/);
+  if (match) return { blogId: match[1], logNo: match[2] };
+
+  const u = new URL(blogUrl);
+  const blogId = u.searchParams.get('blogId');
+  const logNo = u.searchParams.get('logNo');
+  if (blogId && logNo) return { blogId, logNo };
+
+  return null;
+}
+
+function extractOgImage(html) {
+  let m = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+  if (!m) m = html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+  if (!m) return null;
+  return m[1].replace(/&amp;/g, '&');
+}
+
+async function fetchNaverBlogImage(blogUrl) {
+  const parsed = extractBlogIdAndLogNo(blogUrl);
+  if (!parsed) {
+    throw new Error('올바른 네이버 블로그 게시글 주소가 아닙니다 (예: blog.naver.com/아이디/글번호)');
+  }
+  const { blogId, logNo } = parsed;
+
+  // 1차 시도: 모바일 버전 (iframe 없이 바로 본문 로드됨)
+  const mobileUrl = `https://m.blog.naver.com/${blogId}/${logNo}`;
+  let html = null;
+  let lastError = null;
+
+  try {
+    const resp = await fetch(mobileUrl, { headers: BROWSER_HEADERS });
+    if (resp.ok) html = await resp.text();
+    else lastError = new Error(`모바일 블로그 접속 실패 (HTTP ${resp.status})`);
+  } catch (e) {
+    lastError = e;
+  }
+
+  // 2차 시도: PC 버전 iframe 내부 실제 콘텐츠 주소
+  if (!html) {
+    try {
+      const iframeUrl = `https://blog.naver.com/PostView.naver?blogId=${blogId}&logNo=${logNo}`;
+      const resp2 = await fetch(iframeUrl, { headers: BROWSER_HEADERS });
+      if (resp2.ok) html = await resp2.text();
+      else lastError = new Error(`블로그 접속 실패 (HTTP ${resp2.status})`);
+    } catch (e2) {
+      lastError = e2;
+    }
+  }
+
+  if (!html) {
+    throw new Error(`네이버 블로그에 접속할 수 없습니다: ${lastError ? lastError.message : '알 수 없는 오류'}`);
+  }
+
+  const ogImage = extractOgImage(html);
+  if (!ogImage) {
+    throw new Error('이 게시글에서 대표 이미지를 찾을 수 없습니다');
+  }
+  return ogImage;
+}
+
+async function downloadImageAsBase64(imageUrl) {
+  const resp = await fetch(imageUrl, {
+    headers: {
+      'User-Agent': BROWSER_HEADERS['User-Agent'],
+      'Referer': 'https://blog.naver.com/',
+    },
+  });
+  if (!resp.ok) throw new Error(`이미지 다운로드 실패 (HTTP ${resp.status})`);
+  const contentType = resp.headers.get('content-type') || 'image/jpeg';
+  const buffer = await resp.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString('base64');
+  return { base64, mimeType: contentType.split(';')[0] };
+}
+
+async function fetchBlogImageAndUpload(blogUrl, filename) {
+  const naverImageUrl = await fetchNaverBlogImage(blogUrl);
+  const { base64, mimeType } = await downloadImageAsBase64(naverImageUrl);
+  const imageUrl = await uploadImage(base64, filename, mimeType);
+  return { imageUrl, sourceImageUrl: naverImageUrl };
 }
 
 const handler = async (req, res) => {
@@ -176,6 +283,16 @@ const handler = async (req, res) => {
       const { base64, filename, mimeType } = req.body;
       const imageUrl = await uploadImage(base64, filename, mimeType);
       return res.status(200).json({ success: true, imageUrl });
+    }
+
+    if (req.method === 'POST' && action === 'fetchBlogImage') {
+      const { blogUrl, filename } = req.body;
+      if (!blogUrl) return res.status(400).json({ error: '블로그 주소가 필요합니다' });
+      const { imageUrl, sourceImageUrl } = await fetchBlogImageAndUpload(
+        blogUrl,
+        filename || `blog_${Date.now()}.jpg`
+      );
+      return res.status(200).json({ success: true, imageUrl, sourceImageUrl });
     }
 
     if (req.method === 'GET' && action === 'debug') {
