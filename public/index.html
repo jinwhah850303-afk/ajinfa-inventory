@@ -643,6 +643,7 @@ async function loadProduct(id) {
       currentQty = data.product.quantity;
       displayQty = currentQty;
       renderProductView(data.product);
+      maybeAutoFetchBlogImage(data.product);
     } else {
       document.getElementById('registerForm').style.display = 'block';
       document.getElementById('regId').value = id;
@@ -681,6 +682,38 @@ function renderProductView(p) {
 }
 
 function changeQty(delta) { const n = displayQty + delta; if (n < 0) return; displayQty = n; updateQtyDisplay(); }
+
+// 시트에 블로그링크만 있고 이미지URL이 비어있으면
+// 사용자가 아무것도 안 눌러도 자동으로 블로그 사진을 가져와서 시트에 저장
+async function maybeAutoFetchBlogImage(product) {
+  if (!product.blogUrl || (product.imageUrl && product.imageUrl.trim())) return;
+  try {
+    const res = await fetch(`${API}?action=fetchBlogImage`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ blogUrl: product.blogUrl, filename: `blog_${Date.now()}.jpg` })
+    });
+    const data = await res.json();
+    if (!data.success || !data.imageUrl) {
+      console.warn('블로그 자동 가져오기 실패:', data.error);
+      return;
+    }
+    const updateRes = await fetch(`${API}?action=update`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ ...product, imageUrl: data.imageUrl })
+    });
+    const updateData = await updateRes.json();
+    if (updateData.success) {
+      product.imageUrl = data.imageUrl;
+      if (currentProduct && currentProduct.id === product.id) currentProduct.imageUrl = data.imageUrl;
+      const img = document.getElementById('productImage');
+      const ph = document.getElementById('productImagePlaceholder');
+      if (img && ph) { img.src = data.imageUrl; img.style.display = 'block'; ph.style.display = 'none'; }
+    }
+  } catch (e) {
+    console.warn('블로그 자동 가져오기 오류:', e);
+    // 백그라운드 자동 작업이므로 실패해도 사용자에게 에러 토스트는 띄우지 않음
+  }
+}
 function updateQtyDisplay() {
   const el = document.getElementById('qtyDisplay');
   const hint = document.getElementById('qtyChangedHint');
