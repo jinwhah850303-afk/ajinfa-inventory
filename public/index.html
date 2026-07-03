@@ -8,305 +8,162 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --primary: #1B3F6B;
-    --primary-light: #2A5FA0;
-    --accent: #FF6B2B;
-    --accent-light: #FF8C55;
-    --success: #22C55E;
-    --danger: #EF4444;
-    --warning: #F59E0B;
-    --bg: #F0F4F8;
-    --card: #FFFFFF;
-    --text: #1A2332;
-    --text-sub: #5A6A7E;
-    --border: #E2E8F0;
-    --shadow: 0 4px 20px rgba(27,63,107,0.12);
-    --shadow-lg: 0 8px 40px rgba(27,63,107,0.18);
-    --radius: 16px;
-    --radius-sm: 10px;
+    --primary: #1B3F6B; --primary-light: #2A5FA0; --accent: #FF6B2B; --accent-light: #FF8C55;
+    --success: #22C55E; --danger: #EF4444; --bg: #F0F4F8; --card: #FFFFFF;
+    --text: #1A2332; --text-sub: #5A6A7E; --border: #E2E8F0;
+    --shadow: 0 4px 20px rgba(27,63,107,0.12); --shadow-lg: 0 8px 40px rgba(27,63,107,0.18);
+    --radius: 16px; --radius-sm: 10px;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  #loginScreen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 24px;
-    background: linear-gradient(145deg, #0F2444 0%, #1B3F6B 50%, #2A5FA0 100%);
-  }
-
+  #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; background: linear-gradient(145deg, #0F2444 0%, #1B3F6B 50%, #2A5FA0 100%); }
   .login-logo { margin-bottom: 12px; }
   .login-logo svg { width: 64px; height: 64px; filter: drop-shadow(0 4px 12px rgba(255,107,43,0.4)); }
   .login-title { font-size: 28px; font-weight: 900; color: #fff; letter-spacing: -0.5px; margin-bottom: 4px; }
   .login-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 40px; letter-spacing: 1px; text-transform: uppercase; }
-
-  .login-card {
-    background: rgba(255,255,255,0.07);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 24px;
-    padding: 36px 32px;
-    width: 100%;
-    max-width: 360px;
-  }
-
+  .login-card { background: rgba(255,255,255,0.07); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 36px 32px; width: 100%; max-width: 360px; }
   .login-label { font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 8px; display: block; }
-
-  .login-input {
-    width: 100%;
-    background: rgba(255,255,255,0.1);
-    border: 1.5px solid rgba(255,255,255,0.2);
-    border-radius: 12px;
-    padding: 16px 18px;
-    font-size: 18px;
-    font-family: inherit;
-    color: #fff;
-    letter-spacing: 4px;
-    text-align: center;
-    outline: none;
-    transition: all 0.2s;
-    margin-bottom: 20px;
-  }
-
+  .login-input { width: 100%; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 16px 18px; font-size: 18px; font-family: inherit; color: #fff; letter-spacing: 4px; text-align: center; outline: none; transition: all 0.2s; margin-bottom: 20px; }
   .login-input:focus { border-color: var(--accent); background: rgba(255,255,255,0.15); box-shadow: 0 0 0 4px rgba(255,107,43,0.15); }
   .login-input::placeholder { letter-spacing: 2px; color: rgba(255,255,255,0.35); font-size: 14px; }
-
-  .btn-login {
-    width: 100%;
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 17px;
-    font-size: 16px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(255,107,43,0.35);
-  }
-
+  .btn-login { width: 100%; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%); color: #fff; border: none; border-radius: 12px; padding: 17px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(255,107,43,0.35); }
   .btn-login:active { transform: scale(0.98); }
   .login-error { color: #FF6B6B; font-size: 13px; text-align: center; margin-top: 12px; display: none; }
 
   #app { display: none; }
-
-  .header {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 20px rgba(27,63,107,0.25);
-  }
-
+  .header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(27,63,107,0.25); }
   .header-logo { display: flex; align-items: center; gap: 10px; }
   .header-logo svg { width: 32px; height: 32px; }
   .header-title { font-size: 17px; font-weight: 700; color: #fff; line-height: 1.2; }
   .header-sub { font-size: 10px; color: rgba(255,255,255,0.55); font-weight: 400; letter-spacing: 0.5px; }
-
-  .header-menu-btn {
-    background: rgba(255,255,255,0.12);
-    border: none;
-    border-radius: 10px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: #fff;
-    transition: background 0.2s;
-  }
-
+  .header-menu-btn { background: rgba(255,255,255,0.12); border: none; border-radius: 10px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; transition: background 0.2s; }
   .header-menu-btn:active { background: rgba(255,255,255,0.22); }
 
   .page { display: none; padding: 20px; max-width: 480px; margin: 0 auto; }
   .page.active { display: block; }
-
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--card);
-    border-top: 1px solid var(--border);
-    display: flex;
-    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-    z-index: 100;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
-  }
-
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); border-top: 1px solid var(--border); display: flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.06); }
   .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; cursor: pointer; border: none; background: none; font-family: inherit; transition: all 0.2s; }
   .nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); transition: all 0.2s; }
   .nav-label { font-size: 10px; font-weight: 500; color: var(--text-sub); transition: all 0.2s; }
   .nav-item.active .nav-icon { color: var(--primary); transform: translateY(-2px); }
   .nav-item.active .nav-label { color: var(--primary); font-weight: 700; }
-
   .content-area { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
 
   .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
-
   .product-image-wrap { position: relative; width: 100%; aspect-ratio: 4/3; background: linear-gradient(135deg, #E8F0FE 0%, #C7D7F0 100%); overflow: hidden; }
   .product-image-wrap img { width: 100%; height: 100%; object-fit: cover; }
-
   .product-image-placeholder { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--text-sub); }
   .product-image-placeholder svg { width: 48px; height: 48px; opacity: 0.4; }
   .product-image-placeholder span { font-size: 13px; opacity: 0.6; }
-
   .status-badge { position: absolute; top: 12px; right: 12px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
   .status-정상 { background: rgba(34,197,94,0.15); color: #16A34A; border: 1px solid rgba(34,197,94,0.3); }
   .status-품절 { background: rgba(239,68,68,0.15); color: #DC2626; border: 1px solid rgba(239,68,68,0.3); }
   .status-미등록 { background: rgba(148,163,184,0.15); color: #64748B; border: 1px solid rgba(148,163,184,0.3); }
-
   .product-info { padding: 20px; }
   .product-name { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
   .product-id { font-size: 12px; color: var(--text-sub); font-family: 'Courier New', monospace; background: var(--bg); display: inline-block; padding: 3px 8px; border-radius: 6px; margin-bottom: 12px; }
-
-  .product-location { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-sub); margin-bottom: 12px; }
+  .product-location { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--text-sub); margin-bottom: 14px; }
   .product-location svg { color: var(--primary-light); flex-shrink: 0; }
 
-  /* ── 비고 표시 ── */
-  .product-note {
-    background: #FFFBEB;
-    border: 1px solid #FDE68A;
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin-bottom: 16px;
-  }
-  .product-note-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #92400E;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-  }
-  .product-note-text {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.6;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
+  /* ── 비고 ── */
+  .product-note { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; }
+  .product-note-label { font-size: 11px; font-weight: 700; color: #92400E; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+  .product-note-text { font-size: 14px; color: var(--text); line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
 
+  /* ── 창고 맵 ── */
+  .warehouse-map-wrap { margin-bottom: 14px; }
+  .warehouse-map-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .warehouse-map-title { font-size: 11px; font-weight: 700; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; }
+  .warehouse-location-badge { font-size: 13px; font-weight: 700; }
+  .warehouse-location-found { color: #dc2626; }
+  .warehouse-location-none { color: var(--text-sub); font-weight: 500; }
+  .warehouse-svg-wrap { background: white; border-radius: var(--radius-sm); border: 1.5px solid var(--border); padding: 6px; overflow: hidden; }
+  .warehouse-svg { width: 100%; height: auto; display: block; }
+
+  /* 캐비닛 기본 스타일 */
+  .cabinet rect { fill: #e8edf5; stroke: #b0bcd0; stroke-width: 1.5; rx: 4; transition: fill 0.3s, stroke 0.3s; }
+  .cabinet text { fill: #4a5a70; font-size: 11px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  /* 강조 표시 */
+  .cabinet.highlighted rect { fill: #ef4444 !important; stroke: #b91c1c !important; }
+  .cabinet.highlighted text { fill: #ffffff !important; }
+  @keyframes cab-pulse { 0%,100% { opacity:1; } 50% { opacity:0.65; } }
+  .cabinet.highlighted { animation: cab-pulse 1.2s ease-in-out infinite; }
+
+  /* 수량 */
   .qty-section { background: var(--bg); border-radius: var(--radius-sm); padding: 20px; text-align: center; margin-bottom: 16px; }
   .qty-label { font-size: 12px; font-weight: 600; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
-
   .qty-controls { display: flex; align-items: center; justify-content: center; gap: 20px; }
-
   .qty-btn { width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer; font-size: 28px; font-weight: 300; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-family: inherit; }
   .qty-btn-minus { background: rgba(239,68,68,0.1); color: var(--danger); border: 2px solid rgba(239,68,68,0.2); }
   .qty-btn-minus:active { background: rgba(239,68,68,0.2); transform: scale(0.94); }
   .qty-btn-plus { background: rgba(34,197,94,0.1); color: var(--success); border: 2px solid rgba(34,197,94,0.2); }
   .qty-btn-plus:active { background: rgba(34,197,94,0.2); transform: scale(0.94); }
-
   .qty-display { font-size: 52px; font-weight: 900; color: var(--text); min-width: 100px; line-height: 1; transition: all 0.15s; }
   .qty-display.changed { color: var(--accent); }
-
   .qty-changed-hint { margin-top: 10px; font-size: 12px; color: var(--accent); font-weight: 500; opacity: 0; transition: opacity 0.3s; }
   .qty-changed-hint.show { opacity: 1; }
 
   .btn-save { width: 100%; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; border: none; border-radius: var(--radius-sm); padding: 18px; font-size: 17px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(27,63,107,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; }
-  .btn-save:active { transform: scale(0.98); box-shadow: 0 2px 8px rgba(27,63,107,0.2); }
+  .btn-save:active { transform: scale(0.98); }
   .btn-save:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
   .btn-secondary { width: 100%; background: var(--bg); color: var(--text-sub); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .btn-secondary:active { background: var(--border); }
 
   .form-group { margin-bottom: 18px; }
   .form-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; letter-spacing: 0.3px; }
   .form-label span.required { color: var(--accent); margin-left: 3px; }
-
   .form-input { width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 16px; font-family: inherit; color: var(--text); background: var(--card); outline: none; transition: all 0.2s; -webkit-appearance: none; }
   .form-input:focus { border-color: var(--primary-light); box-shadow: 0 0 0 4px rgba(42,95,160,0.1); }
   .form-input[readonly] { background: var(--bg); color: var(--text-sub); font-family: 'Courier New', monospace; font-size: 14px; }
-
   textarea.form-input { resize: none; height: 80px; line-height: 1.5; }
-
   .image-upload-area { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 30px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; background: var(--bg); }
-  .image-upload-area:active, .image-upload-area.dragover { border-color: var(--primary-light); background: rgba(42,95,160,0.05); }
   .image-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .upload-icon { color: var(--text-sub); margin-bottom: 8px; }
   .upload-text { font-size: 14px; color: var(--text-sub); }
   .upload-hint { font-size: 12px; color: var(--border); margin-top: 4px; }
-
   .image-preview { display: none; position: relative; border-radius: var(--radius-sm); overflow: hidden; }
   .image-preview img { width: 100%; max-height: 200px; object-fit: cover; display: block; }
   .image-preview-remove { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
-
   .page-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
   .page-subtitle { font-size: 13px; color: var(--text-sub); margin-bottom: 20px; }
-
   .search-bar { display: flex; align-items: center; background: var(--card); border-radius: var(--radius-sm); border: 1.5px solid var(--border); padding: 12px 16px; gap: 10px; margin-bottom: 16px; box-shadow: var(--shadow); }
   .search-bar svg { color: var(--text-sub); flex-shrink: 0; }
   .search-bar input { flex: 1; border: none; outline: none; font-size: 15px; font-family: inherit; color: var(--text); background: transparent; }
   .search-bar input::placeholder { color: var(--text-sub); }
-
   .filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; -ms-overflow-style: none; scrollbar-width: none; }
   .filter-tabs::-webkit-scrollbar { display: none; }
-
   .filter-tab { flex-shrink: 0; padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); font-size: 13px; font-weight: 600; color: var(--text-sub); cursor: pointer; transition: all 0.2s; font-family: inherit; }
   .filter-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
-
   .product-list-item { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; transition: all 0.15s; text-decoration: none; color: inherit; border: 1.5px solid transparent; }
   .product-list-item:active { transform: scale(0.98); border-color: var(--primary-light); }
-
   .product-thumb { width: 64px; height: 64px; border-radius: 10px; background: linear-gradient(135deg, #E8F0FE, #C7D7F0); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .product-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .product-thumb svg { color: var(--text-sub); opacity: 0.4; }
-
   .product-list-info { flex: 1; min-width: 0; }
   .product-list-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
   .product-list-meta { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
-
   .product-list-qty { text-align: right; flex-shrink: 0; }
   .qty-number { font-size: 24px; font-weight: 900; color: var(--text); line-height: 1; }
   .qty-unit { font-size: 11px; color: var(--text-sub); }
-
   .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
   .stat-card { background: var(--card); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
   .stat-label { font-size: 12px; color: var(--text-sub); font-weight: 500; margin-bottom: 8px; }
   .stat-value { font-size: 32px; font-weight: 900; line-height: 1; }
-  .stat-value.blue { color: var(--primary); }
-  .stat-value.green { color: var(--success); }
-  .stat-value.red { color: var(--danger); }
-  .stat-value.orange { color: var(--accent); }
-
+  .stat-value.blue { color: var(--primary); } .stat-value.green { color: var(--success); } .stat-value.red { color: var(--danger); } .stat-value.orange { color: var(--accent); }
   .toast { position: fixed; bottom: calc(80px + env(safe-area-inset-bottom) + 12px); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; box-shadow: var(--shadow-lg); }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  .toast.success { background: var(--success); }
-  .toast.error { background: var(--danger); }
-
-  .loading-overlay { position: fixed; inset: 0; background: rgba(240,244,248,0.85); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; gap: 16px; display: none; }
+  .toast.success { background: var(--success); } .toast.error { background: var(--danger); }
+  .loading-overlay { position: fixed; inset: 0; background: rgba(240,244,248,0.85); backdrop-filter: blur(4px); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 200; gap: 16px; }
   .spinner { width: 44px; height: 44px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size: 14px; color: var(--text-sub); font-weight: 500; }
-
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text-sub); }
   .empty-state svg { margin-bottom: 16px; opacity: 0.3; }
   .empty-state h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
   .empty-state p { font-size: 14px; }
-
-  .section-title { font-size: 13px; font-weight: 700; color: var(--text-sub); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; margin-top: 4px; }
-
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 300; display: none; align-items: flex-end; }
   .modal-overlay.show { display: flex; }
-
   .modal-sheet { background: var(--card); border-radius: 24px 24px 0 0; padding: 28px 24px calc(24px + env(safe-area-inset-bottom)); width: 100%; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
@@ -319,17 +176,12 @@
   <div class="spinner"></div>
   <div class="loading-text" id="loadingText">처리중...</div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <!-- 로그인 -->
 <div id="loginScreen">
   <div class="login-logo">
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="64" height="64" rx="16" fill="rgba(255,255,255,0.1)"/>
-      <path d="M12 44L20 20H28L36 40L40 28H52" stroke="#FF6B2B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="52" cy="44" r="6" fill="#FF6B2B"/>
-    </svg>
+    <svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="16" fill="rgba(255,255,255,0.1)"/><path d="M12 44L20 20H28L36 40L40 28H52" stroke="#FF6B2B" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="52" cy="44" r="6" fill="#FF6B2B"/></svg>
   </div>
   <div class="login-title">아진 FA</div>
   <div class="login-sub">Factory Automation · Inventory</div>
@@ -345,22 +197,14 @@
 <div id="app">
   <div class="header">
     <div class="header-logo">
-      <svg viewBox="0 0 32 32" fill="none">
-        <rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.15)"/>
-        <path d="M6 22L10 10H14L18 20L20 14H26" stroke="#FF6B2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="26" cy="22" r="3" fill="#FF6B2B"/>
-      </svg>
+      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="rgba(255,255,255,0.15)"/><path d="M6 22L10 10H14L18 20L20 14H26" stroke="#FF6B2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="22" r="3" fill="#FF6B2B"/></svg>
       <div>
         <div class="header-title">아진 FA 재고관리</div>
         <div class="header-sub">Factory Automation</div>
       </div>
     </div>
     <button class="header-menu-btn" onclick="doLogout()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     </button>
   </div>
 
@@ -368,47 +212,23 @@
 
     <!-- 제품 페이지 -->
     <div class="page" id="pageProduct">
-
-      <!-- 미등록: 등록 폼 -->
       <div id="registerForm" style="display:none;">
         <div style="padding:20px 0 8px;">
           <div class="page-title">새 제품 등록</div>
           <div class="page-subtitle" id="registerSubtitle">QR 코드로 새 제품을 등록합니다</div>
         </div>
         <div class="card" style="padding:20px;">
-          <div class="form-group">
-            <label class="form-label">고유번호</label>
-            <input type="text" class="form-input" id="regId" readonly>
-          </div>
-          <div class="form-group">
-            <label class="form-label">제품명 <span class="required">*</span></label>
-            <input type="text" class="form-input" id="regName" placeholder="예: 옴론 PLC CJ1M-CPU13">
-          </div>
-          <div class="form-group">
-            <label class="form-label">위치 <span class="required">*</span></label>
-            <input type="text" class="form-input" id="regLocation" placeholder="예: A-3 선반">
-          </div>
-          <div class="form-group">
-            <label class="form-label">수량 <span class="required">*</span></label>
-            <input type="number" class="form-input" id="regQty" placeholder="0" min="0">
-          </div>
-          <div class="form-group">
-            <label class="form-label">비고</label>
-            <textarea class="form-input" id="regNote" placeholder="메모, 특이사항 등"></textarea>
-          </div>
+          <div class="form-group"><label class="form-label">고유번호</label><input type="text" class="form-input" id="regId" readonly></div>
+          <div class="form-group"><label class="form-label">제품명 <span class="required">*</span></label><input type="text" class="form-input" id="regName" placeholder="예: 옴론 PLC CJ1M-CPU13"></div>
+          <div class="form-group"><label class="form-label">위치 <span class="required">*</span></label><input type="text" class="form-input" id="regLocation" placeholder="예: S4"></div>
+          <div class="form-group"><label class="form-label">수량 <span class="required">*</span></label><input type="number" class="form-input" id="regQty" placeholder="0" min="0"></div>
+          <div class="form-group"><label class="form-label">비고</label><textarea class="form-input" id="regNote" placeholder="메모, 특이사항 등"></textarea></div>
           <div class="form-group">
             <label class="form-label">제품 사진</label>
-            <div class="image-preview" id="regImagePreview">
-              <img id="regImagePreviewImg" src="" alt="">
-              <button class="image-preview-remove" onclick="removeImage()">✕</button>
-            </div>
+            <div class="image-preview" id="regImagePreview"><img id="regImagePreviewImg" src="" alt=""><button class="image-preview-remove" onclick="removeImage()">✕</button></div>
             <div class="image-upload-area" id="regUploadArea">
               <input type="file" accept="image/*" id="regImageInput" onchange="handleImageSelect(event)">
-              <div class="upload-icon">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-                </svg>
-              </div>
+              <div class="upload-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
               <div class="upload-text">사진을 탭해서 추가</div>
               <div class="upload-hint">JPG, PNG 지원</div>
             </div>
@@ -420,34 +240,99 @@
         </div>
       </div>
 
-      <!-- 등록됨: 수량 조절 화면 -->
       <div id="productView" style="display:none;">
         <div class="card">
-          <div class="product-image-wrap" id="productImageWrap">
+          <div class="product-image-wrap">
             <div class="product-image-placeholder" id="productImagePlaceholder">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               <span>사진 없음</span>
             </div>
             <img id="productImage" src="" alt="" style="display:none;" onclick="openImageFull()">
             <div class="status-badge" id="statusBadge"></div>
           </div>
-
           <div class="product-info">
             <div class="product-name" id="productName"></div>
             <div class="product-id" id="productIdDisplay"></div>
             <div class="product-location">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <span id="productLocation"></span>
             </div>
 
-            <!-- 비고 표시 -->
+            <!-- 비고 -->
             <div class="product-note" id="productNoteBox" style="display:none;">
               <div class="product-note-label">📝 비고</div>
               <div class="product-note-text" id="productNoteText"></div>
+            </div>
+
+            <!-- 창고 맵 -->
+            <div class="warehouse-map-wrap" id="warehouseMapWrap" style="display:none;">
+              <div class="warehouse-map-header">
+                <div class="warehouse-map-title">📦 창고 위치</div>
+                <div id="cabinetHint"></div>
+              </div>
+              <div class="warehouse-svg-wrap">
+                <svg class="warehouse-svg" viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg">
+                  <!-- 외곽 경계 -->
+                  <rect x="3" y="3" width="694" height="394" rx="14" fill="#f0f4f8" stroke="#c8d4e0" stroke-width="2"/>
+                  <!-- 우측 열 1-5 -->
+                  <g id="cab-1" class="cabinet"><rect x="653" y="10" width="40" height="78" rx="4"/><text x="673" y="50">1</text></g>
+                  <g id="cab-2" class="cabinet"><rect x="653" y="93" width="40" height="62" rx="4"/><text x="673" y="124">2</text></g>
+                  <g id="cab-3" class="cabinet"><rect x="653" y="160" width="40" height="62" rx="4"/><text x="673" y="191">3</text></g>
+                  <g id="cab-4" class="cabinet"><rect x="653" y="227" width="40" height="62" rx="4"/><text x="673" y="258">4</text></g>
+                  <g id="cab-5" class="cabinet"><rect x="653" y="294" width="40" height="99" rx="4"/><text x="673" y="344">5</text></g>
+                  <!-- 상단 열 -->
+                  <g id="cab-20" class="cabinet"><rect x="10" y="10" width="76" height="77" rx="4"/><text x="48" y="50">20</text></g>
+                  <g id="cab-21" class="cabinet"><rect x="91" y="10" width="76" height="77" rx="4"/><text x="129" y="50">21</text></g>
+                  <g id="cab-22" class="cabinet"><rect x="172" y="10" width="76" height="77" rx="4"/><text x="210" y="50">22</text></g>
+                  <rect x="253" y="10" width="98" height="77" rx="4" fill="#dfe8f4" stroke="#a8bcd0" stroke-width="1.5"/>
+                  <text x="302" y="52" text-anchor="middle" font-size="12" fill="#5a7090" font-family="sans-serif">🚪 정문</text>
+                  <g id="cab-23" class="cabinet"><rect x="356" y="10" width="76" height="77" rx="4"/><text x="394" y="50">23</text></g>
+                  <g id="cab-43" class="cabinet"><rect x="437" y="10" width="76" height="77" rx="4"/><text x="475" y="50">43</text></g>
+                  <rect x="518" y="10" width="130" height="77" rx="4" fill="#e0f0dc" stroke="#98c090" stroke-width="1.5"/>
+                  <text x="583" y="40" text-anchor="middle" font-size="10" fill="#3a6040" font-family="sans-serif">실험실</text>
+                  <text x="583" y="60" text-anchor="middle" font-size="10" fill="#3a6040" font-family="sans-serif">&amp; 포토</text>
+                  <!-- 중간 상단열 32,24,25,26,27,41 -->
+                  <g id="cab-32" class="cabinet"><rect x="248" y="93" width="67" height="62" rx="4"/><text x="281" y="124">32</text></g>
+                  <g id="cab-24" class="cabinet"><rect x="320" y="93" width="67" height="62" rx="4"/><text x="353" y="124">24</text></g>
+                  <g id="cab-25" class="cabinet"><rect x="392" y="93" width="67" height="62" rx="4"/><text x="425" y="124">25</text></g>
+                  <g id="cab-26" class="cabinet"><rect x="464" y="93" width="67" height="62" rx="4"/><text x="497" y="124">26</text></g>
+                  <g id="cab-27" class="cabinet"><rect x="536" y="93" width="67" height="62" rx="4"/><text x="569" y="124">27</text></g>
+                  <g id="cab-41" class="cabinet"><rect x="608" y="93" width="40" height="62" rx="4"/><text x="628" y="124">41</text></g>
+                  <!-- 중간 하단열 30B,42,35,34,31,36,30,29,28 -->
+                  <g id="cab-30B" class="cabinet"><rect x="108" y="163" width="60" height="62" rx="4"/><text x="138" y="194" font-size="10">30B</text></g>
+                  <g id="cab-42" class="cabinet"><rect x="173" y="163" width="60" height="62" rx="4"/><text x="203" y="194">42</text></g>
+                  <g id="cab-35" class="cabinet"><rect x="238" y="163" width="60" height="62" rx="4"/><text x="268" y="194">35</text></g>
+                  <g id="cab-34" class="cabinet"><rect x="303" y="163" width="60" height="62" rx="4"/><text x="333" y="194">34</text></g>
+                  <g id="cab-31" class="cabinet"><rect x="368" y="163" width="60" height="62" rx="4"/><text x="398" y="194">31</text></g>
+                  <g id="cab-36" class="cabinet"><rect x="433" y="163" width="60" height="62" rx="4"/><text x="463" y="194">36</text></g>
+                  <g id="cab-30" class="cabinet"><rect x="498" y="163" width="52" height="62" rx="4"/><text x="524" y="194">30</text></g>
+                  <g id="cab-29" class="cabinet"><rect x="555" y="163" width="52" height="62" rx="4"/><text x="581" y="194">29</text></g>
+                  <g id="cab-28" class="cabinet"><rect x="612" y="163" width="36" height="62" rx="4"/><text x="630" y="194">28</text></g>
+                  <!-- 좌측 37, 화장실, 19 -->
+                  <g id="cab-37" class="cabinet"><rect x="10" y="165" width="90" height="125" rx="4"/><text x="55" y="230">37</text></g>
+                  <rect x="10" y="295" width="90" height="96" rx="4" fill="#e4ecf8" stroke="#a8c0d8" stroke-width="1.5"/>
+                  <text x="55" y="335" text-anchor="middle" font-size="18" font-family="sans-serif">🚻</text>
+                  <text x="55" y="358" text-anchor="middle" font-size="10" fill="#5a7090" font-family="sans-serif">화장실</text>
+                  <g id="cab-19" class="cabinet"><rect x="105" y="248" width="65" height="62" rx="4"/><text x="137" y="279">19</text></g>
+                  <!-- 창고 중앙 -->
+                  <text x="390" y="270" text-anchor="middle" font-size="38" font-weight="700" fill="#dce4f0" font-family="sans-serif">창고</text>
+                  <!-- 하단 열 38,18,17,16,15,14,13,12,11,10,9,8,7,6 -->
+                  <g id="cab-38" class="cabinet"><rect x="108" y="308" width="38" height="82" rx="4"/><text x="127" y="350">38</text></g>
+                  <g id="cab-18" class="cabinet"><rect x="147" y="308" width="38" height="82" rx="4"/><text x="166" y="350">18</text></g>
+                  <g id="cab-17" class="cabinet"><rect x="186" y="308" width="38" height="82" rx="4"/><text x="205" y="350">17</text></g>
+                  <g id="cab-16" class="cabinet"><rect x="225" y="308" width="38" height="82" rx="4"/><text x="244" y="350">16</text></g>
+                  <g id="cab-15" class="cabinet"><rect x="264" y="308" width="38" height="82" rx="4"/><text x="283" y="350">15</text></g>
+                  <g id="cab-14" class="cabinet"><rect x="303" y="308" width="38" height="82" rx="4"/><text x="322" y="350">14</text></g>
+                  <g id="cab-13" class="cabinet"><rect x="342" y="308" width="38" height="82" rx="4"/><text x="361" y="350">13</text></g>
+                  <g id="cab-12" class="cabinet"><rect x="381" y="308" width="38" height="82" rx="4"/><text x="400" y="350">12</text></g>
+                  <g id="cab-11" class="cabinet"><rect x="420" y="308" width="38" height="82" rx="4"/><text x="439" y="350">11</text></g>
+                  <g id="cab-10" class="cabinet"><rect x="459" y="308" width="38" height="82" rx="4"/><text x="478" y="350">10</text></g>
+                  <g id="cab-9"  class="cabinet"><rect x="498" y="308" width="38" height="82" rx="4"/><text x="517" y="350">9</text></g>
+                  <g id="cab-8"  class="cabinet"><rect x="537" y="308" width="38" height="82" rx="4"/><text x="556" y="350">8</text></g>
+                  <g id="cab-7"  class="cabinet"><rect x="576" y="308" width="38" height="82" rx="4"/><text x="595" y="350">7</text></g>
+                  <g id="cab-6"  class="cabinet"><rect x="615" y="308" width="33" height="82" rx="4"/><text x="631" y="350">6</text></g>
+                </svg>
+              </div>
             </div>
 
             <div class="qty-section">
@@ -459,37 +344,27 @@
               </div>
               <div class="qty-changed-hint" id="qtyChangedHint">저장 버튼을 눌러야 반영됩니다</div>
             </div>
-
             <button class="btn-save" id="btnSave" onclick="saveQty()">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-              </svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
               저장하기
             </button>
-
             <button class="btn-secondary" onclick="openEditModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               정보 수정
             </button>
           </div>
         </div>
       </div>
 
-      <!-- 로딩 중 -->
       <div id="productLoading" style="display:none;">
         <div style="text-align:center; padding:80px 20px;">
           <div class="spinner" style="margin:0 auto 16px;"></div>
           <div style="color:var(--text-sub); font-size:14px;">제품 정보를 불러오는 중...</div>
         </div>
       </div>
-
     </div>
 
-    <!-- 전체 목록 -->
+    <!-- 목록 페이지 -->
     <div class="page" id="pageList">
       <div style="padding-top:20px;">
         <div class="stats-grid" id="statsGrid"></div>
@@ -507,7 +382,7 @@
       </div>
     </div>
 
-    <!-- 위치별 -->
+    <!-- 위치별 페이지 -->
     <div class="page" id="pageLocation">
       <div style="padding-top:20px;">
         <div class="page-title">위치별 재고</div>
@@ -515,35 +390,19 @@
         <div id="locationContainer"></div>
       </div>
     </div>
-
   </div>
 
-  <!-- 바텀 네비 -->
   <nav class="bottom-nav">
     <button class="nav-item" onclick="showPage('pageProduct')" id="nav-pageProduct">
-      <div class="nav-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/>
-          <path d="M21 16h-3a2 2 0 0 0-2 2v3"/><line x1="21" y1="21" x2="21" y2="21"/>
-        </svg>
-      </div>
+      <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><line x1="21" y1="21" x2="21" y2="21"/></svg></div>
       <span class="nav-label">스캔</span>
     </button>
     <button class="nav-item" onclick="showPage('pageList')" id="nav-pageList">
-      <div class="nav-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-          <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-        </svg>
-      </div>
+      <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
       <span class="nav-label">목록</span>
     </button>
     <button class="nav-item" onclick="showPage('pageLocation')" id="nav-pageLocation">
-      <div class="nav-icon">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
+      <div class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
       <span class="nav-label">위치별</span>
     </button>
   </nav>
@@ -554,31 +413,15 @@
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">제품 정보 수정</div>
-    <div class="form-group">
-      <label class="form-label">제품명</label>
-      <input type="text" class="form-input" id="editName">
-    </div>
-    <div class="form-group">
-      <label class="form-label">위치</label>
-      <input type="text" class="form-input" id="editLocation">
-    </div>
-    <div class="form-group">
-      <label class="form-label">비고</label>
-      <textarea class="form-input" id="editNote" placeholder="메모, 특이사항 등"></textarea>
-    </div>
+    <div class="form-group"><label class="form-label">제품명</label><input type="text" class="form-input" id="editName"></div>
+    <div class="form-group"><label class="form-label">위치</label><input type="text" class="form-input" id="editLocation"></div>
+    <div class="form-group"><label class="form-label">비고</label><textarea class="form-input" id="editNote" placeholder="메모, 특이사항 등"></textarea></div>
     <div class="form-group">
       <label class="form-label">제품 사진 변경</label>
-      <div class="image-preview" id="editImagePreview">
-        <img id="editImagePreviewImg" src="" alt="">
-        <button class="image-preview-remove" onclick="removeEditImage()">✕</button>
-      </div>
+      <div class="image-preview" id="editImagePreview"><img id="editImagePreviewImg" src="" alt=""><button class="image-preview-remove" onclick="removeEditImage()">✕</button></div>
       <div class="image-upload-area" id="editUploadArea">
         <input type="file" accept="image/*" id="editImageInput" onchange="handleEditImageSelect(event)">
-        <div class="upload-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-          </svg>
-        </div>
+        <div class="upload-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
         <div class="upload-text">사진 변경</div>
       </div>
     </div>
@@ -593,24 +436,118 @@ const PASSWORD = '2032';
 const SESSION_KEY = 'ajinfa_session';
 const SESSION_DURATION = 24 * 60 * 60 * 1000;
 
-let currentProduct = null;
-let currentQty = 0;
-let displayQty = 0;
-let allProducts = [];
-let currentFilter = 'all';
-let selectedImageBase64 = null;
-let selectedImageMime = null;
-let editImageBase64 = null;
-let editImageMime = null;
-let editImageChanged = false;
+let currentProduct = null, currentQty = 0, displayQty = 0;
+let allProducts = [], currentFilter = 'all';
+let selectedImageBase64 = null, selectedImageMime = null;
+let editImageBase64 = null, editImageMime = null, editImageChanged = false;
 
+// ══════════════════════════════════════════
+// 박스 → 캐비닛 매핑 (업데이트 쉽게 여기서만 수정!)
+// 박스명은 대문자+하이픈제거로 자동 정규화됨
+// 예: "F65-2" 도 "F65-2" 또는 "f652" 로 검색 가능
+// ══════════════════════════════════════════
+const BOX_TO_CABINET = {
+  // ─── 1번 캐비닛 ───
+  'F5':1,'F14':1,'F16':1,'F17':1,'F18':1,'F19':1,'F20':1,'F21':1,
+  'F24':1,'F34':1,'F35':1,'F69':1,'F74':1,'F75':1,
+
+  // ─── 2번 캐비닛 ───
+  'A2':2,'F22':2,'F23':2,'F29':2,'F30':2,'F31':2,'F36':2,'F39':2,
+  'F51':2,'F52':2,'F53':2,'F54':2,'F55':2,'F56':2,'F68':2,'F70':2,
+  'F71':2,'F72':2,'F76':2,'F78':2,'F79':2,
+
+  // ─── 2특 캐비닛 (지도상 2번 위치) ───
+  'F65':2,'F652':2,'F66':2,
+
+  // ─── 4번 캐비닛 ───
+  'F40':4,'F41':4,'F42':4,'F43':4,'F44':4,'F45':4,'F46':4,'F47':4,'F73':4,'F77':4,
+
+  // ─── 6번 캐비닛 ───
+  'F57':6,'F58':6,'F59':6,'F60':6,
+
+  // ─── 7번 캐비닛 ───
+  'F61':7,'F62':7,
+
+  // ─── 10번 캐비닛 ───
+  'F63':10,'F64':10,
+
+  // ─── 16번 캐비닛 ───
+  'E8':16,'E9':16,'E10':16,'E11':16,'E12':16,'I6':16,'I7':16,
+
+  // ─── 18번 캐비닛 ───
+  'I8':18,'I91':18,'I92':18,'I10':18,'I11':18,'I12':18,'I14':18,
+
+  // ─── 25번 캐비닛 ───
+  'T1':25,'T2':25,'T3':25,'T4':25,'T5':25,'T6':25,'T7':25,'T8':25,
+  'T9':25,'T10':25,'T11':25,'T12':25,'T13':25,'T14':25,'T15':25,
+  'T16':25,'T17':25,'T18':25,'T19':25,'T20':25,'T21':25,
+
+  // ─── 26번 캐비닛 ───
+  'U1':26,'U21':26,'U3':26,'U4':26,'U5':26,'U6':26,'U7':26,'U8':26,
+  'U9':26,'U10':26,'U12':26,'263':26,
+
+  // ─── 27번 캐비닛 ───
+  'V1':27,'V2':27,'V3':27,'V4':27,'V5':27,'V6':27,'V7':27,'V8':27,
+  'V9':27,'V10':27,'V11':27,'V12':27,'V13':27,'V14':27,'V15':27,
+
+  // ─── 28번 캐비닛 ───
+  '17':28,'18':28,'19':28,
+
+  // ─── 29번 캐비닛 ───
+  'W1':29,'W2':29,'W3':29,'W4':29,'W5':29,'W6':29,'W7':29,'W8':29,
+  'W9':29,'W10':29,'W11':29,'W12':29,'W14':29,'W15':29,'W16':29,
+  'W17':29,'W18':29,'W19':29,
+
+  // ─── 30번 캐비닛 ───
+  'X1':30,'X2':30,'X3':30,'X5':30,'X6':30,'X7':30,'X8':30,'X9':30,
+  'X10':30,'X11':30,'X12':30,'X13':30,'X14':30,'X15':30,'X16':30,
+  'X17':30,'X18':30,'X20':30,
+
+  // ─── 32번 캐비닛 ───
+  'S1':32,'S2':32,'S3':32,'S4':32,'S5':32,'S6':32,'S8':32,'S9':32,
+  'S10':32,'S11':32,'S12':32,'S13':32,'S15':32,'S16':32,'S17':32,
+  'S18':32,'S19':32,'S21':32,'S22':32,'S23':32,'S24':32,'S25':32,'S26':32,
+};
+
+// 박스명 정규화 (대문자 + 하이픈/공백 제거)
+function normalizeBox(str) {
+  return str.trim().toUpperCase().replace(/[-\s]/g, '');
+}
+
+// 박스 → 캐비닛 번호 검색
+function findCabinet(location) {
+  if (!location) return null;
+  return BOX_TO_CABINET[normalizeBox(location)] || null;
+}
+
+// 창고 맵 업데이트
+function updateWarehouseMap(location) {
+  const wrap = document.getElementById('warehouseMapWrap');
+  const hint = document.getElementById('cabinetHint');
+
+  // 이전 강조 초기화
+  document.querySelectorAll('.warehouse-svg .cabinet').forEach(el => el.classList.remove('highlighted'));
+
+  if (!location) { wrap.style.display = 'none'; return; }
+
+  wrap.style.display = 'block';
+  const cabNum = findCabinet(location);
+
+  if (cabNum) {
+    hint.innerHTML = `<span style="color:var(--text-sub);font-size:13px;">${location}</span> <span style="color:var(--text-sub);font-size:13px;">→</span> <span class="warehouse-location-found" style="font-size:13px;font-weight:700;">${cabNum}번 캐비닛</span>`;
+    const el = document.getElementById(`cab-${cabNum}`);
+    if (el) el.classList.add('highlighted');
+  } else {
+    hint.innerHTML = `<span class="warehouse-location-none" style="font-size:12px;">위치 미매핑 (단일 품목)</span>`;
+  }
+}
+
+// ── 인증 ──
 function checkSession() {
   const s = localStorage.getItem(SESSION_KEY);
   if (!s) return false;
-  const { ts } = JSON.parse(s);
-  return Date.now() - ts < SESSION_DURATION;
+  return Date.now() - JSON.parse(s).ts < SESSION_DURATION;
 }
-
 function doLogin() {
   const pw = document.getElementById('passwordInput').value;
   if (pw === PASSWORD) {
@@ -624,29 +561,18 @@ function doLogin() {
     setTimeout(() => document.getElementById('loginError').style.display = 'none', 2000);
   }
 }
-
 function doLogout() {
-  if (confirm('로그아웃 하시겠습니까?')) {
-    localStorage.removeItem(SESSION_KEY);
-    location.reload();
-  }
+  if (confirm('로그아웃 하시겠습니까?')) { localStorage.removeItem(SESSION_KEY); location.reload(); }
 }
+document.getElementById('passwordInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
-document.getElementById('passwordInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
+// ── 초기화 ──
 function initApp() {
   const path = window.location.pathname;
   const match = path.match(/\/i\/([^\/]+)/i);
   if (match) {
     let rawId = match[1];
-    let productId;
-    if (/^\d+$/.test(rawId)) {
-      productId = 'INV-' + String(parseInt(rawId)).padStart(6, '0');
-    } else {
-      productId = rawId.toUpperCase();
-    }
+    const productId = /^\d+$/.test(rawId) ? 'INV-' + String(parseInt(rawId)).padStart(6, '0') : rawId.toUpperCase();
     showPage('pageProduct');
     loadProduct(productId);
   } else {
@@ -659,8 +585,8 @@ function showPage(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(pageId).classList.add('active');
-  const navBtn = document.getElementById('nav-' + pageId);
-  if (navBtn) navBtn.classList.add('active');
+  const nav = document.getElementById('nav-' + pageId);
+  if (nav) nav.classList.add('active');
   if (pageId === 'pageList') loadAllProducts();
   if (pageId === 'pageLocation') loadLocationView();
 }
@@ -683,7 +609,7 @@ async function loadProduct(id) {
       document.getElementById('regId').value = id;
       document.getElementById('registerSubtitle').textContent = `${id} — 새 제품을 등록하세요`;
     }
-  } catch (e) {
+  } catch(e) {
     document.getElementById('productLoading').style.display = 'none';
     showToast('오류가 발생했습니다', 'error');
   }
@@ -695,55 +621,30 @@ function renderProductView(p) {
   document.getElementById('productIdDisplay').textContent = p.id;
   document.getElementById('productLocation').textContent = p.location;
   document.getElementById('qtyDisplay').textContent = p.quantity;
-
   const badge = document.getElementById('statusBadge');
   badge.textContent = p.status;
   badge.className = `status-badge status-${p.status}`;
-
   const img = document.getElementById('productImage');
-  const placeholder = document.getElementById('productImagePlaceholder');
-  if (p.imageUrl) {
-    img.src = p.imageUrl;
-    img.style.display = 'block';
-    placeholder.style.display = 'none';
-  } else {
-    img.style.display = 'none';
-    placeholder.style.display = 'flex';
-  }
-
-  // 비고 표시
+  const ph = document.getElementById('productImagePlaceholder');
+  if (p.imageUrl) { img.src = p.imageUrl; img.style.display = 'block'; ph.style.display = 'none'; }
+  else { img.style.display = 'none'; ph.style.display = 'flex'; }
+  // 비고
   const noteBox = document.getElementById('productNoteBox');
-  const noteText = document.getElementById('productNoteText');
-  if (p.note && p.note.trim()) {
-    noteText.textContent = p.note;
-    noteBox.style.display = 'block';
-  } else {
-    noteBox.style.display = 'none';
-  }
-
-  displayQty = p.quantity;
-  currentQty = p.quantity;
+  if (p.note && p.note.trim()) { document.getElementById('productNoteText').textContent = p.note; noteBox.style.display = 'block'; }
+  else noteBox.style.display = 'none';
+  // 창고 맵
+  updateWarehouseMap(p.location);
+  displayQty = p.quantity; currentQty = p.quantity;
   updateQtyDisplay();
 }
 
-function changeQty(delta) {
-  const newQty = displayQty + delta;
-  if (newQty < 0) return;
-  displayQty = newQty;
-  updateQtyDisplay();
-}
-
+function changeQty(delta) { const n = displayQty + delta; if (n < 0) return; displayQty = n; updateQtyDisplay(); }
 function updateQtyDisplay() {
   const el = document.getElementById('qtyDisplay');
   const hint = document.getElementById('qtyChangedHint');
   el.textContent = displayQty;
-  if (displayQty !== currentQty) {
-    el.classList.add('changed');
-    hint.classList.add('show');
-  } else {
-    el.classList.remove('changed');
-    hint.classList.remove('show');
-  }
+  if (displayQty !== currentQty) { el.classList.add('changed'); hint.classList.add('show'); }
+  else { el.classList.remove('changed'); hint.classList.remove('show'); }
 }
 
 async function saveQty() {
@@ -751,30 +652,16 @@ async function saveQty() {
   if (displayQty === currentQty) { showToast('변경된 수량이 없습니다'); return; }
   showLoading('저장 중...');
   try {
-    const updated = { ...currentProduct, quantity: displayQty };
-    const res = await fetch(`${API}?action=update`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updated),
-    });
+    const res = await fetch(`${API}?action=update`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({...currentProduct, quantity: displayQty}) });
     const data = await res.json();
     hideLoading();
     if (data.success) {
-      currentQty = displayQty;
-      currentProduct.quantity = displayQty;
-      currentProduct.status = data.status;
+      currentQty = displayQty; currentProduct.quantity = displayQty; currentProduct.status = data.status;
       const badge = document.getElementById('statusBadge');
-      badge.textContent = data.status;
-      badge.className = `status-badge status-${data.status}`;
-      updateQtyDisplay();
-      showToast('저장되었습니다 ✓', 'success');
-    } else {
-      showToast('저장 실패', 'error');
-    }
-  } catch (e) {
-    hideLoading();
-    showToast('오류가 발생했습니다', 'error');
-  }
+      badge.textContent = data.status; badge.className = `status-badge status-${data.status}`;
+      updateQtyDisplay(); showToast('저장되었습니다 ✓', 'success');
+    } else showToast('저장 실패', 'error');
+  } catch(e) { hideLoading(); showToast('오류가 발생했습니다', 'error'); }
 }
 
 async function registerProduct() {
@@ -783,44 +670,26 @@ async function registerProduct() {
   const location = document.getElementById('regLocation').value.trim();
   const qty = parseInt(document.getElementById('regQty').value) || 0;
   const note = document.getElementById('regNote').value.trim();
-
   if (!name) { showToast('제품명을 입력하세요', 'error'); return; }
   if (!location) { showToast('위치를 입력하세요', 'error'); return; }
-
   showLoading('등록 중...');
   try {
     let imageUrl = '';
     if (selectedImageBase64) {
-      const uploadRes = await fetch(`${API}?action=upload`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base64: selectedImageBase64, filename: `${id}_${Date.now()}.jpg`, mimeType: selectedImageMime }),
-      });
-      const uploadData = await uploadRes.json();
-      if (uploadData.imageUrl) imageUrl = uploadData.imageUrl;
+      const up = await fetch(`${API}?action=upload`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({base64:selectedImageBase64, filename:`${id}_${Date.now()}.jpg`, mimeType:selectedImageMime}) });
+      const ud = await up.json();
+      if (ud.imageUrl) imageUrl = ud.imageUrl;
     }
-    const res = await fetch(`${API}?action=add`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, name, location, quantity: qty, imageUrl, note }),
-    });
+    const res = await fetch(`${API}?action=add`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id,name,location,quantity:qty,imageUrl,note}) });
     const data = await res.json();
     hideLoading();
-    if (data.success) {
-      showToast('등록 완료! ✓', 'success');
-      await loadProduct(id);
-    } else {
-      showToast('등록 실패', 'error');
-    }
-  } catch (e) {
-    hideLoading();
-    showToast('오류가 발생했습니다', 'error');
-  }
+    if (data.success) { showToast('등록 완료! ✓', 'success'); await loadProduct(id); }
+    else showToast('등록 실패', 'error');
+  } catch(e) { hideLoading(); showToast('오류가 발생했습니다', 'error'); }
 }
 
 function handleImageSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+  const file = event.target.files[0]; if (!file) return;
   selectedImageMime = file.type;
   const reader = new FileReader();
   reader.onload = e => {
@@ -831,10 +700,8 @@ function handleImageSelect(event) {
   };
   reader.readAsDataURL(file);
 }
-
 function removeImage() {
-  selectedImageBase64 = null;
-  selectedImageMime = null;
+  selectedImageBase64 = null; selectedImageMime = null;
   document.getElementById('regImagePreview').style.display = 'none';
   document.getElementById('regUploadArea').style.display = 'block';
   document.getElementById('regImageInput').value = '';
@@ -845,23 +712,16 @@ function openEditModal() {
   document.getElementById('editName').value = currentProduct.name;
   document.getElementById('editLocation').value = currentProduct.location;
   document.getElementById('editNote').value = currentProduct.note || '';
-  editImageBase64 = null;
-  editImageMime = null;
-  editImageChanged = false;
+  editImageBase64 = null; editImageMime = null; editImageChanged = false;
   document.getElementById('editImagePreview').style.display = 'none';
   document.getElementById('editUploadArea').style.display = 'block';
   document.getElementById('editModal').classList.add('show');
 }
-
-function closeEditModal() {
-  document.getElementById('editModal').classList.remove('show');
-}
+function closeEditModal() { document.getElementById('editModal').classList.remove('show'); }
 
 function handleEditImageSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  editImageMime = file.type;
-  editImageChanged = true;
+  const file = event.target.files[0]; if (!file) return;
+  editImageMime = file.type; editImageChanged = true;
   const reader = new FileReader();
   reader.onload = e => {
     editImageBase64 = e.target.result.split(',')[1];
@@ -871,11 +731,8 @@ function handleEditImageSelect(event) {
   };
   reader.readAsDataURL(file);
 }
-
 function removeEditImage() {
-  editImageBase64 = null;
-  editImageMime = null;
-  editImageChanged = true;
+  editImageBase64 = null; editImageMime = null; editImageChanged = true;
   document.getElementById('editImagePreview').style.display = 'none';
   document.getElementById('editUploadArea').style.display = 'block';
   document.getElementById('editImageInput').value = '';
@@ -887,43 +744,25 @@ async function saveEdit() {
   const note = document.getElementById('editNote').value.trim();
   if (!name) { showToast('제품명을 입력하세요', 'error'); return; }
   if (!location) { showToast('위치를 입력하세요', 'error'); return; }
-
-  showLoading('수정 중...');
-  closeEditModal();
+  showLoading('수정 중...'); closeEditModal();
   try {
     let imageUrl = currentProduct.imageUrl;
     if (editImageChanged) {
       if (editImageBase64) {
-        const uploadRes = await fetch(`${API}?action=upload`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ base64: editImageBase64, filename: `${currentProduct.id}_${Date.now()}.jpg`, mimeType: editImageMime }),
-        });
-        const uploadData = await uploadRes.json();
-        if (uploadData.imageUrl) imageUrl = uploadData.imageUrl;
-      } else {
-        imageUrl = '';
-      }
+        const up = await fetch(`${API}?action=upload`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({base64:editImageBase64, filename:`${currentProduct.id}_${Date.now()}.jpg`, mimeType:editImageMime}) });
+        const ud = await up.json();
+        if (ud.imageUrl) imageUrl = ud.imageUrl;
+      } else imageUrl = '';
     }
-    const updated = { ...currentProduct, name, location, imageUrl, note };
-    const res = await fetch(`${API}?action=update`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updated),
-    });
+    const res = await fetch(`${API}?action=update`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({...currentProduct, name, location, imageUrl, note}) });
     const data = await res.json();
     hideLoading();
     if (data.success) {
-      currentProduct = { ...currentProduct, name, location, imageUrl, note };
+      currentProduct = {...currentProduct, name, location, imageUrl, note};
       renderProductView(currentProduct);
       showToast('수정 완료 ✓', 'success');
-    } else {
-      showToast('수정 실패', 'error');
-    }
-  } catch (e) {
-    hideLoading();
-    showToast('오류가 발생했습니다', 'error');
-  }
+    } else showToast('수정 실패', 'error');
+  } catch(e) { hideLoading(); showToast('오류가 발생했습니다', 'error'); }
 }
 
 async function loadAllProducts() {
@@ -933,25 +772,20 @@ async function loadAllProducts() {
     const data = await res.json();
     hideLoading();
     allProducts = data.products || [];
-    renderStats();
-    filterProducts();
-  } catch (e) {
-    hideLoading();
-    showToast('목록을 불러올 수 없습니다', 'error');
-  }
+    renderStats(); filterProducts();
+  } catch(e) { hideLoading(); showToast('목록을 불러올 수 없습니다', 'error'); }
 }
 
 function renderStats() {
   const total = allProducts.length;
   const normal = allProducts.filter(p => p.status === '정상').length;
   const soldout = allProducts.filter(p => p.status === '품절').length;
-  const totalQty = allProducts.reduce((s, p) => s + (p.quantity || 0), 0);
+  const totalQty = allProducts.reduce((s,p) => s + (p.quantity||0), 0);
   document.getElementById('statsGrid').innerHTML = `
     <div class="stat-card"><div class="stat-label">전체 품목</div><div class="stat-value blue">${total}</div></div>
     <div class="stat-card"><div class="stat-label">총 재고 수량</div><div class="stat-value orange">${totalQty.toLocaleString()}</div></div>
     <div class="stat-card"><div class="stat-label">정상 품목</div><div class="stat-value green">${normal}</div></div>
-    <div class="stat-card"><div class="stat-label">품절 품목</div><div class="stat-value red">${soldout}</div></div>
-  `;
+    <div class="stat-card"><div class="stat-label">품절 품목</div><div class="stat-value red">${soldout}</div></div>`;
 }
 
 function setFilter(filter, btn) {
@@ -977,22 +811,16 @@ function renderProductList(products) {
   }
   container.innerHTML = products.map(p => `
     <div class="product-list-item" onclick="goToProduct('${p.id}')">
-      <div class="product-thumb">
-        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="" onerror="this.style.display='none'">` : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}
-      </div>
+      <div class="product-thumb">${p.imageUrl ? `<img src="${p.imageUrl}" alt="" onerror="this.style.display='none'">` : `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`}</div>
       <div class="product-list-info">
         <div class="product-list-name">${p.name || '(이름 없음)'}</div>
         <div class="product-list-meta">
-          <span class="status-badge status-${p.status}" style="position:static; font-size:11px; padding:2px 8px;">${p.status}</span>
+          <span class="status-badge status-${p.status}" style="position:static;font-size:11px;padding:2px 8px;">${p.status}</span>
           <span>📍 ${p.location || '-'}</span>
         </div>
       </div>
-      <div class="product-list-qty">
-        <div class="qty-number">${p.quantity}</div>
-        <div class="qty-unit">개</div>
-      </div>
-    </div>
-  `).join('');
+      <div class="product-list-qty"><div class="qty-number">${p.quantity}</div><div class="qty-unit">개</div></div>
+    </div>`).join('');
 }
 
 function goToProduct(id) {
@@ -1009,46 +837,30 @@ async function loadLocationView() {
       const data = await res.json();
       hideLoading();
       allProducts = data.products || [];
-    } catch (e) {
-      hideLoading();
-      return;
-    }
+    } catch(e) { hideLoading(); return; }
   }
-  const locationMap = {};
-  allProducts.forEach(p => {
-    const loc = p.location || '위치 미지정';
-    if (!locationMap[loc]) locationMap[loc] = [];
-    locationMap[loc].push(p);
-  });
-  const sorted = Object.entries(locationMap).sort((a, b) => a[0].localeCompare(b[0]));
+  const map = {};
+  allProducts.forEach(p => { const loc = p.location || '위치 미지정'; if (!map[loc]) map[loc] = []; map[loc].push(p); });
+  const sorted = Object.entries(map).sort((a,b) => a[0].localeCompare(b[0]));
   const container = document.getElementById('locationContainer');
   if (!sorted.length) { container.innerHTML = `<div class="empty-state"><h3>데이터가 없습니다</h3></div>`; return; }
   container.innerHTML = sorted.map(([loc, items]) => `
-    <div class="card" style="padding:16px; margin-bottom:12px;">
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+    <div class="card" style="padding:16px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span style="font-size:15px; font-weight:700; color:var(--primary);">${loc}</span>
-        <span style="margin-left:auto; font-size:12px; color:var(--text-sub);">${items.length}종</span>
+        <span style="font-size:15px;font-weight:700;color:var(--primary);">${loc}</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--text-sub);">${items.length}종</span>
       </div>
       ${items.map(p => `
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-top:1px solid var(--border); cursor:pointer;" onclick="goToProduct('${p.id}')">
-          <div>
-            <div style="font-size:14px; font-weight:600; color:var(--text);">${p.name || '(이름 없음)'}</div>
-            <div style="font-size:11px; color:var(--text-sub); font-family:monospace;">${p.id}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:18px; font-weight:800; color:var(--text);">${p.quantity}</div>
-            <div style="font-size:10px; color:var(--text-sub);">개</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);cursor:pointer;" onclick="goToProduct('${p.id}')">
+          <div><div style="font-size:14px;font-weight:600;">${p.name||'(이름 없음)'}</div><div style="font-size:11px;color:var(--text-sub);font-family:monospace;">${p.id}</div></div>
+          <div style="text-align:right;"><div style="font-size:18px;font-weight:800;">${p.quantity}</div><div style="font-size:10px;color:var(--text-sub);">개</div></div>
+        </div>`).join('')}
+    </div>`).join('');
 }
 
 function openImageFull() {
-  const src = document.getElementById('productImage').src;
-  if (!src) return;
+  const src = document.getElementById('productImage').src; if (!src) return;
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:500;display:flex;align-items:center;justify-content:center;';
   overlay.innerHTML = `<img src="${src}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
@@ -1056,21 +868,9 @@ function openImageFull() {
   document.body.appendChild(overlay);
 }
 
-function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `toast show ${type}`;
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-function showLoading(text = '처리중...') {
-  document.getElementById('loadingText').textContent = text;
-  document.getElementById('loadingOverlay').style.display = 'flex';
-}
-
-function hideLoading() {
-  document.getElementById('loadingOverlay').style.display = 'none';
-}
+function showToast(msg, type='') { const t=document.getElementById('toast'); t.textContent=msg; t.className=`toast show ${type}`; setTimeout(()=>t.classList.remove('show'),2500); }
+function showLoading(text='처리중...') { document.getElementById('loadingText').textContent=text; document.getElementById('loadingOverlay').style.display='flex'; }
+function hideLoading() { document.getElementById('loadingOverlay').style.display='none'; }
 
 window.addEventListener('load', () => {
   if (checkSession()) {
@@ -1080,9 +880,7 @@ window.addEventListener('load', () => {
   }
 });
 
-document.getElementById('editModal').addEventListener('click', function(e) {
-  if (e.target === this) closeEditModal();
-});
+document.getElementById('editModal').addEventListener('click', function(e) { if (e.target === this) closeEditModal(); });
 </script>
 </body>
 </html>
