@@ -154,6 +154,7 @@
   .product-list-info { flex: 1; min-width: 0; }
   .product-list-name { font-size: 15px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
   .product-list-meta { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
+  .product-list-note { font-size: 11px; color: #92400E; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 6px; padding: 3px 8px; margin-top: 5px; display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .product-list-qty { text-align: right; flex-shrink: 0; }
   .qty-number { font-size: 24px; font-weight: 900; color: var(--text); line-height: 1; }
   .qty-unit { font-size: 11px; color: var(--text-sub); }
@@ -924,6 +925,7 @@ function renderProductList(products) {
           <span class="status-badge status-${p.status}" style="position:static;font-size:11px;padding:2px 8px;">${p.status}</span>
           <span>📍 ${p.location || '-'}</span>
         </div>
+        ${p.note && p.note.trim() ? `<div class="product-list-note">📝 ${p.note}</div>` : ''}
       </div>
       <div class="product-list-qty"><div class="qty-number">${p.quantity}</div><div class="qty-unit">개</div></div>
     </div>`).join('');
@@ -959,7 +961,11 @@ async function loadLocationView() {
       </div>
       ${items.map(p => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);cursor:pointer;" onclick="goToProduct('${p.id}')">
-          <div><div style="font-size:14px;font-weight:600;">${p.name||'(이름 없음)'}</div><div style="font-size:11px;color:var(--text-sub);font-family:monospace;">${p.id}</div></div>
+          <div>
+            <div style="font-size:14px;font-weight:600;">${p.name||'(이름 없음)'}</div>
+            <div style="font-size:11px;color:var(--text-sub);font-family:monospace;">${p.id}</div>
+            ${p.note && p.note.trim() ? `<div class="product-list-note" style="margin-top:4px;">📝 ${p.note}</div>` : ''}
+          </div>
           <div style="text-align:right;"><div style="font-size:18px;font-weight:800;">${p.quantity}</div><div style="font-size:10px;color:var(--text-sub);">개</div></div>
         </div>`).join('')}
     </div>`).join('');
