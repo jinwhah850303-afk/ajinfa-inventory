@@ -248,6 +248,80 @@ async function fetchBlogImageAndUpload(blogUrl, filename) {
   return { imageUrl, sourceImageUrl: naverImageUrl };
 }
 
+// ══════════════════════════════════════════
+// 제품명(모델번호)으로 블로그 내부 검색 → 최신 글의 대표 이미지 가져오기
+// ══════════════════════════════════════════
+
+async function searchNaverBlogLogNos(blogId, query) {
+  // 실제 확인된 모바일 블로그 검색 주소 (orderType=date → 최신순 정렬, 첫 결과 = 최신글)
+  const searchUrl = `https://m.blog.naver.com/PostSearchList.naver?blogId=${encodeURIComponent(blogId)}&orderType=date&pageAccess=direct&periodType=all&searchText=${encodeURIComponent(query)}&trackingCode=blog_bloghome_search_mobile`;
+  const resp = await fetch(searchUrl, { headers: BROWSER_HEADERS });
+  if (!resp.ok) {
+    throw new Error(`블로그 검색 페이지 접속 실패 (HTTP ${resp.status})`);
+  }
+  const html = await resp.text();
+  const linkRegex = new RegExp(`${blogId}\\/(\\d{6,})`, 'g');
+  const found = [...html.matchAll(linkRegex)].map(m => m[1]);
+  const uniqueLogNos = [...new Set(found)];
+  if (!uniqueLogNos.length) {
+    throw new Error(`"${query}" 검색 결과를 서버에서 읽지 못했습니다 (자바스크립트 렌더링 페이지일 가능성)`);
+  }
+  return uniqueLogNos.slice(0, 5); // 후보 최대 5개까지만 (요청 과다 방지)
+}
+
+function extractPostDate(html) {
+  // 네이버 블로그 게시글 발행일 형식: "2025. 12. 16. 14:36" 류의 패턴 탐색
+  const m = html.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})\./);
+  if (!m) return null;
+  const [, y, mo, d] = m;
+  const date = new Date(`${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+async function pickMostRecentPost(blogId, logNos) {
+  let best = null;
+  for (const logNo of logNos) {
+    try {
+      const url = `https://m.blog.naver.com/${blogId}/${logNo}`;
+      const resp = await fetch(url, { headers: BROWSER_HEADERS });
+      if (!resp.ok) continue;
+      const html = await resp.text();
+      const publishedAt = extractPostDate(html);
+      if (!best || (publishedAt && (!best.publishedAt || publishedAt > best.publishedAt))) {
+        best = { logNo, html, publishedAt };
+      }
+    } catch (e) {
+      // 이 글은 건너뛰고 다음 후보 시도
+    }
+  }
+  return best;
+}
+
+async function searchAndFetchBlogImage(productCode, blogId, filename) {
+  const bId = blogId || 'jinwhah';
+  const logNos = await searchNaverBlogLogNos(bId, productCode);
+
+  // orderType=date로 이미 최신순 정렬되어 있으므로, 앞에서부터 순서대로 시도
+  // (첫 글에 대표이미지가 없으면 다음 후보로 넘어감)
+  let lastError = null;
+  for (const logNo of logNos) {
+    try {
+      const url = `https://m.blog.naver.com/${bId}/${logNo}`;
+      const resp = await fetch(url, { headers: BROWSER_HEADERS });
+      if (!resp.ok) { lastError = new Error(`글 접속 실패 (HTTP ${resp.status})`); continue; }
+      const html = await resp.text();
+      const ogImage = extractOgImage(html);
+      if (!ogImage) { lastError = new Error('대표 이미지 없음'); continue; }
+      const { base64, mimeType } = await downloadImageAsBase64(ogImage);
+      const imageUrl = await uploadImage(base64, filename, mimeType);
+      return { imageUrl, logNo, sourceImageUrl: ogImage };
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw new Error(`검색된 글에서 이미지를 찾지 못했습니다: ${lastError ? lastError.message : ''}`);
+}
+
 const handler = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
@@ -293,6 +367,17 @@ const handler = async (req, res) => {
         filename || `blog_${Date.now()}.jpg`
       );
       return res.status(200).json({ success: true, imageUrl, sourceImageUrl });
+    }
+
+    if (req.method === 'POST' && action === 'searchBlogImage') {
+      const { productCode, blogId, filename } = req.body;
+      if (!productCode) return res.status(400).json({ error: '검색어(제품명)가 필요합니다' });
+      const { imageUrl, logNo, sourceImageUrl } = await searchAndFetchBlogImage(
+        productCode,
+        blogId,
+        filename || `blog_${Date.now()}.jpg`
+      );
+      return res.status(200).json({ success: true, imageUrl, logNo, sourceImageUrl });
     }
 
     if (req.method === 'GET' && action === 'debug') {
