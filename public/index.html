@@ -450,6 +450,11 @@
       </div>
       <div class="blog-fetch-hint">블로그 글의 대표 사진을 자동으로 가져옵니다</div>
 
+      <div class="blog-fetch-row" style="margin-top:8px;">
+        <button type="button" class="btn-blog-fetch" id="editBlogSearchBtn" style="flex:1;" onclick="searchBlogImageForEdit()">제품명으로 블로그 검색해서 가져오기</button>
+      </div>
+      <div class="blog-fetch-hint">링크를 모를 때, 제품명으로 블로그 내부 검색 후 최신 글 사진을 가져옵니다</div>
+
       <div class="or-divider">또는 직접 업로드</div>
 
       <div class="image-preview" id="editImagePreview"><img id="editImagePreviewImg" src="" alt=""><button class="image-preview-remove" onclick="removeEditImage()">✕</button></div>
@@ -693,14 +698,26 @@ function renderProductView(p) {
 
 function changeQty(delta) { const n = displayQty + delta; if (n < 0) return; displayQty = n; updateQtyDisplay(); }
 
-// 시트에 블로그링크만 있고 이미지URL이 비어있으면
-// 사용자가 아무것도 안 눌러도 자동으로 블로그 사진을 가져와서 시트에 저장
+// 시트에 이미지URL이 비어있으면 자동으로 사진을 채워 넣음
+// 1순위: 블로그링크(J열)가 있으면 그 글의 대표사진
+// 2순위: 블로그링크가 없으면 제품명(모델번호)으로 블로그 내부 검색 → 최신 글의 대표사진
 async function maybeAutoFetchBlogImage(product) {
-  if (!product.blogUrl || (product.imageUrl && product.imageUrl.trim())) return;
+  if (product.imageUrl && product.imageUrl.trim()) return; // 이미 사진 있으면 스킵
+
+  if (product.blogUrl && product.blogUrl.trim()) {
+    await tryAutoFetchAndSave(product, 'fetchBlogImage', { blogUrl: product.blogUrl });
+    return;
+  }
+  if (product.name && product.name.trim()) {
+    await tryAutoFetchAndSave(product, 'searchBlogImage', { productCode: product.name.trim() });
+  }
+}
+
+async function tryAutoFetchAndSave(product, action, bodyExtra) {
   try {
-    const res = await fetch(`${API}?action=fetchBlogImage`, {
+    const res = await fetch(`${API}?action=${action}`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ blogUrl: product.blogUrl, filename: `blog_${Date.now()}.jpg` })
+      body: JSON.stringify({ ...bodyExtra, filename: `blog_${Date.now()}.jpg` })
     });
     const data = await res.json();
     if (!data.success || !data.imageUrl) {
@@ -863,6 +880,33 @@ async function fetchBlogImageForEdit() {
     showToast('오류가 발생했습니다', 'error');
   }
   btn.disabled = false; btn.textContent = '가져오기';
+}
+
+async function searchBlogImageForEdit() {
+  const productCode = document.getElementById('editName').value.trim();
+  if (!productCode) { showToast('제품명을 먼저 입력하세요', 'error'); return; }
+  const btn = document.getElementById('editBlogSearchBtn');
+  btn.disabled = true; btn.textContent = '검색 중...';
+  try {
+    const res = await fetch(`${API}?action=searchBlogImage`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ productCode, filename: `blog_${Date.now()}.jpg` })
+    });
+    const data = await res.json();
+    if (data.success && data.imageUrl) {
+      editBlogImageUrl = data.imageUrl;
+      editImageBase64 = null; editImageMime = null; editImageChanged = true;
+      document.getElementById('editImagePreviewImg').src = data.imageUrl;
+      document.getElementById('editImagePreview').style.display = 'block';
+      document.getElementById('editUploadArea').style.display = 'none';
+      showToast('블로그 검색으로 사진을 가져왔습니다 ✓', 'success');
+    } else {
+      showToast(data.error || '검색 실패', 'error');
+    }
+  } catch(e) {
+    showToast('오류가 발생했습니다', 'error');
+  }
+  btn.disabled = false; btn.textContent = '제품명으로 블로그 검색해서 가져오기';
 }
 
 function handleEditImageSelect(event) {
